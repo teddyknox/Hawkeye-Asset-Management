@@ -1,3 +1,6 @@
 Readability Parser (http://www.readability.com/developers/api/parser)
 App: K Means Clustering Fun
 Token: c250a39459a247284924dfb275d9797082f9b420
+
+Test Url
+https://www.readability.com/api/content/v1/parser?&token=c250a39459a247284924dfb275d9797082f9b420&url=http://www.wired.com/wiredscience/2013/04/psychedlic/
