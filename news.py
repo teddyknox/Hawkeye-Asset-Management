@@ -38,13 +38,13 @@ class News(object):
 		c.execute('''CREATE TABLE IF NOT EXISTS articles (date text, source text, symbol text, title text, content text, url text, image_url text)''')
 		self.conn.commit()
 
-	def db_commit(self):
+	def db_insert(self):
 		if self.articles:
 			if not self.conn:
 				self.db_connect()
 			c = self.conn.cursor()
-			filtered_articles = filter(lambda a: a['status'] == 200, self.articles)
-			ready_articles = map(lambda a: (a['date'], a['source'], a['symbol'], a['title'], a['content'], a['url'], a['image_url']), filtered_articles)
+			# filtered_articles = filter(lambda a: a['status'] == 200, self.articles)
+			ready_articles = map(lambda a: (a['date'], a['source'], a['symbol'], a['title'], a['content'], a['url'], a['image_url']), self.articles)
 			c.executemany('INSERT INTO articles VALUES (?, ?, ?, ?, ?, ?, ?)', ready_articles)
 			self.conn.commit()
 		else:
@@ -85,7 +85,8 @@ class GoogleFinanceNews(News):
 			return get_params['q'][0]
 
 	def scrape(self, lookup_symbol):
-		url = 'https://www.google.com/finance/company_news?q=%s&num=10000' % lookup_symbol.replace(':', '%3A')
+		encoded_symbol = lookup_symbol.replace(':', '%3A')
+		url = 'https://www.google.com/finance/company_news?q=%s&num=10000' % encoded_symbol
 		request = requests.get(url)
 		html_doc = request.text
 		soup = BeautifulSoup(html_doc, 'lxml')
@@ -96,17 +97,31 @@ class GoogleFinanceNews(News):
 		for i, article_div in enumerate(article_divs):
 			stdout.write('\r Parsing article %d' % i)
 			stdout.flush()
+
 			google_url = article_div.find('a')['href'] # get first link per item
 			parse_url = READABILITY_URL + self.parse_google_url(google_url)
-			date = self.parse_google_date(article_div.find('span', {'class': 'date'}).string)
+			google_date = self.parse_google_date(article_div.find('span', {'class': 'date'}).string)
 
-			parse_urls.append(parse_url)
-			google_dates.append(date)
+			response = requests.get(parse_url)
+			info = response.json()
+			if response.status_code == 200:
+				date = self.parse_readability_date(info['date_published']) or google_date
+				article = {
+					'title': 		info['title'],
+					'url': 			info['url'],
+					'content': 		BeautifulSoup(info['content']).get_text(),
+					'image_url':	info['lead_image_url'], # could be cool
+					'symbol':		lookup_symbol,
+					'source': 		info['domain'],
+					'date':			date,
+				}
+				self.articles.append(article)
+				
 			# source = article_div.find('span', {'class': 'src'}).string
 			# article = { date: date, source: source }
 			# articles.append(article)
 
-		responses = grequests.map((grequests.get(u) for u in parse_urls), size=10)
+		# responses = grequests.map((grequests.get(u) for u in parse_urls), size=10)
 		# responses = []
 		# for url in parse_urls:
 		# 	res = requests.get(url)
@@ -117,26 +132,9 @@ class GoogleFinanceNews(News):
 		# 		print '\t' + url
 		# 	sleep(.1) # throttling
 	
-		articles = []
-		for res, google_date in zip(responses, google_dates):
-			status = res.status_code
+		# articles = []
+		# for res, google_date in zip(responses, google_dates):
+		# 	status = res.status_code
 
-			info = res.json()
-			if status == 200:
-				date = self.parse_readability_date(info['date_published']) or google_date
-				try:
-					article = {
-						'status': 		status,
-						'title': 		info['title'],
-						'url': 			info['url'],
-						'content': 		BeautifulSoup(info['content']).get_text(),
-						'image_url':	info['lead_image_url'], # could be cool
-						'symbol':		lookup_symbol,
-						'source': 		info['domain'],
-						'date':			date,
-					}
-				except Exception as e:
-					print e
-				articles.append(article)
+	
 
-		self.articles = articles
