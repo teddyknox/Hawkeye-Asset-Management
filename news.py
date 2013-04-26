@@ -3,6 +3,7 @@ import sqlite3
 import requests
 import grequests
 from bs4 import BeautifulSoup
+
 # from collections import namedtuple
 # Article = namedtuple("Article", "date source symbol title content") # much faster lookup than a dictionary
 
@@ -18,7 +19,7 @@ class News(object):
 	def create_db():
 		conn = sqlite3.connect('articles.db')
 		c = self.conn.cursor()
-		c.execute('''CREATE TABLE articles (date text, source text, symbol text, title text, content text)''')
+		c.execute('''CREATE TABLE articles (date text, source text, symbol text, title text, content text, url text, image_url text)''')
 		conn.commit()
 		conn.close()
 
@@ -30,8 +31,8 @@ class News(object):
 		if http://www.readability.com/icles:
 			conn = sqlite3.connect('articles.db')
 			c = self.conn.cursor()
-			ready_articles = map(lambda a: (a.date, a.source, a.symbol, a.title, a.content), self.articles)
-			c.executemany('INSERT INTO article VALUES (?, ?, ?, ?, ?)', ready_articles)
+			ready_articles = map(lambda a: (a['date'], a['source'], a['symbol'], a['title'], a['content'], a['url'], a['image_url']), self.articles)
+			c.executemany('INSERT INTO article VALUES (?, ?, ?, ?, ?, ?, ?)', ready_articles)
 			conn.commit()
 			conn.close()
 
@@ -46,20 +47,29 @@ class GoogleFinanceNews(News):
 		soup = BeautifulSoup(html_doc, 'lxml')
 		article_divs = soup.find_all("div", {"class": "g-section news sfe-break-bottom-16"})
 		articles = []
-		urls = []
+		google_urls = []
 		for article_div in article_divs:
 			anchor = article_div.find('a') # get first link per item
-			url = 'http:' + anchor['href']
 			article = dict(
-				link = url,
-				title = anchor.string,
 				source = article_div.find('span', {'class': 'src'}).string,
 				date = article_div.find('span', {'class': 'date'}).string
 			)
-			urls.append(PARSE_URL + url)
+			google_urls.append(PARSE_URL + 'http:' + anchor['href'])
 			articles.append(article)
-		requests = (grequests.get(urls[0], hooks=dict(response=print_res)) for u in urls)
-		responses = grequests.map(requests, size=8)
+
+		reqs = (grequests.get(u) for u in google_urls)
+		responses = grequests.map(reqs, size=5)
+
+		for article, res in zip(articles, responses):
+			if res.status_code == 200:
+				info = res.json()
+				article['title'] = info['title']
+				article['url'] = info['url']
+				article['content'] = BeautifulSoup(info['content']).get_text()
+				article['image_url'] = info['lead_image_url'] # could be cool
+				article['symbol'] = lookup_symbol
+
+		self.articles = articles
 
 	def save_readability_parse(res):
 		print res.status_code

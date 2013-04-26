@@ -36,10 +36,11 @@ for article_div in article_divs:
 # for url in urls:
 	# print url
 
-requests = (grequests.get(urls[0], hooks=dict(response=print_res)) for u in urls)
-responses = grequests.map(requests, size=10)
+# requests = (grequests.get(urls[0], hooks=dict(response=print_res)) for u in urls)
+# responses = grequests.map(requests, size=10)
 
 # responses = grequests.map(rs)
 # for response in responses:
-	# print response.status_code
+response = requests.get(urls[0])
+print response.json()
 
