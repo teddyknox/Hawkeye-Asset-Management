@@ -97,8 +97,7 @@ class Training(object):
 
 	def test_features(self, l):
 		'''
-		l is a 2D array where each top-level array is an article,
-		and each lower-level array is a feature in that article.
+		l is an array containing arrays of article features.
 		returns a dictionary keyed with the feature containing the
 		frequency of that feature across the given articles.
 		'''
@@ -170,6 +169,9 @@ class Training(object):
 		return self.find_extremes(self.weighted_features)
 
 	def train_to_pickle(self):
+		'''
+		does it all and spits it into a file named [index].train
+		'''
 		self.get_stock_data()  #stock function not working yet (API issues on pots end)
 		self.find_dates() #not fully tested, waiting working stock function
 
