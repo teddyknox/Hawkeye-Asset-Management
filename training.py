@@ -6,6 +6,7 @@ import datetime
 import math
 import sqlite3
 import string
+import pickle
 
 class Training(object):
 
@@ -60,11 +61,11 @@ class Training(object):
 	def find_extremes(self, d):
 		positive = []
 		negative = []
-		sd = stats(d)
-		m = mean(d)
+		sd = self.stats(d)
+		m = self.mean(d)
 		for key in d:
-			d[key] = value
-			if math.abs(value) - math.abs(m) > sd*self.SDweight:
+			value = d[key]
+			if math.fabs(value) - math.fabs(m) > sd*self.SDweight:
 				if value > m:
 					positive.append(key)
 				else:
@@ -135,12 +136,12 @@ class Training(object):
 				results[feature] = pos[feature] + neg[feature]
 				del neg[feature]
 			else:
-				results[feature = pos[feature]
+				results[feature] = pos[feature]
 
 		for feature in neg:
 			results[feature] = neg[feature]
 
-		self.weighted_features += results
+		self.weighted_features = dict(results.items() + self.weighted_features.items())
 
 	def single_word_features(self):
 		pos = []
@@ -168,6 +169,24 @@ class Training(object):
 		'''
 		return self.find_extremes(self.weighted_features)
 
+	def train_to_pickle(self):
+		self.get_stock_data()  #stock function not working yet (API issues on pots end)
+		self.find_dates() #not fully tested, waiting working stock function
+
+		#self.positive_dates.append("2013-04-30")  #used for testing 
+		#self.negative_dates.append("2013-05-01")  #while stocks are down
+
+		self.get_news_data()
+		self.all_weighted_features()
+
+		#save to pickle
+		f = open(self.quote+'.train', 'w')
+		p = pickle.Pickler(f)
+		p.dump(self.find_extremes(self.weighted_features))
+		f.close()
+
+
+
 
 
 
@@ -177,13 +196,11 @@ class Training(object):
 #print t.stock_data
 
 f = Training("AAPL", datetime.date(2013,03,25), datetime.date(2013,03,26))
-f.positive_dates.append("2013-04-30")
-f.negative_dates.append("2013-05-01")
-f.get_news_data()
-pos, neg = f.single_word_features()
-print pos
-print "# OF ARTICLES: " + str(len(pos))
-print f.test_features(pos)
+f.train_to_pickle()
+#f.positive_dates.append("2013-04-30")
+#f.negative_dates.append("2013-05-01")
+#f.get_news_data()
+
 
 
 
