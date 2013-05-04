@@ -23,6 +23,12 @@ class Stock(object):
 		self.percent_change = (p2 - p1)/(.5 * (p1 + p2)) * 100
 
 
+#<<<<<<< HEAD
 #stock = Stock("GOOG")
 #stock.get_percent_change("2013-3-25", "2013-3-26")
 #print stock.percent_change
+#=======
+stock = Stock("GOOG")
+stock.get_percent_change("2013-03-25", "2013-03-26")
+print stock.percent_change
+#>>>>>>> 69fea863a589b7b73946b7055ad18fbbb6a5f4a8
