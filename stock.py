@@ -28,6 +28,7 @@ class Stock(object):
 		else:
 			self.data = ystockquote.get_historical_prices(self.quote, convert_date(start_date), convert_date(end_date))
 			days = len(self.data) - 1
+			# print self.data
 			p2 = float(self.data[1][4])
 			p1 = float(self.data[days][4])
 			self.percent_change = (p2 - p1)/(.5 * (p1 + p2)) * 100
@@ -41,5 +42,5 @@ def convert_date(date):
 
 
 stock = Stock("GOOG")
-stock.get_percent_change("2013-3-25", "2013-3-26")
+stock.get_percent_change("2013-03-25", "2013-03-26")
 print stock.percent_change
