@@ -17,7 +17,7 @@ READABILITY_URL = 'http://www.readability.com/api/content/v1/parser?token=c250a3
 REUTERS_URL = 'http://www.reuters.com/finance/stocks/companyNews?symbol=%s&date=%s'
 GOOGLE_FINANCE_URL = 'https://www.google.com/finance/company_news?q=%s&num=10000'
 TWITTER_SEARCH_URL = 'https://api.twitter.com/1.1/search/tweets.json'
-TWITTER_PARAMS = '?&q=%s&result_type=popular&count=20&lang=en'
+TWITTER_PARAMS = '?&q=%s&result_type=mixed&count=20&lang=en'
 
 TWITTER_OAUTH_URL = 'https://api.twitter.com/oauth2/token'
 
@@ -36,7 +36,7 @@ class News(object):
 		self.conn = False
 		self.articles = []
 
-	def db_connect(self):
+	def db_open(self):
 		self.conn = sqlite3.connect(self.db_name)
 
 	def readability(self, url, symbol, date):
@@ -68,7 +68,7 @@ class News(object):
 
 	def db_create(self):
 		if not self.conn:
-			self.db_connect()
+			self.db_open()
 		c = self.conn.cursor()
 		c.execute('''CREATE TABLE IF NOT EXISTS articles (date text, source text, symbol text, title text, content text, url text, image_url text, UNIQUE (title))''')
 		self.conn.commit()
@@ -76,7 +76,7 @@ class News(object):
 	def db_insert(self):
 		if self.articles:
 			if not self.conn:
-				self.db_connect()
+				self.db_open()
 			c = self.conn.cursor()
 			# filtered_articles = filter(lambda a: a['status'] == 200, self.articles)
 			ready_articles = map(lambda a: (a['date'], a['source'], a['symbol'], a['title'], a['content'], a['url'], a['image_url']), self.articles)
@@ -87,7 +87,7 @@ class News(object):
 
 	def db_articles(self, symbol):
 		if not self.conn:
-			self.db_connect()
+			self.db_open()
 		c = self.conn.cursor()
 		rows = c.execute('SELECT * FROM articles WHERE symbol=?', (symbol,))
 		return rows
@@ -105,18 +105,36 @@ class TwitterNews(News):
 		if res['token_type'] == 'bearer':
 			self.twitter_auth = {'Authorization': 'Bearer ' + res['access_token']}
 
-	def scrape(self, symbol, usernames, keywords):
+	def scrape_wrapper(self, query_tuples, days_back=1):
+		self.db_open()
+		self.authenticate()
+		for q in query_tuples:
+			self.scrape(q[0], stock[1], stock[2], days_back)
+		self.db_close()
+
+	def scrape(self, symbol, keywords, usernames, days_back):
 
 		# setup
+		keywords.append('$' + symbol)
+
 		one_day = datetime.timedelta(days=1)
-		search_date_start = datetime.datetime.now() - one_day
-		search_date_end = datetime.datetime.now()
+		# search_date_end = datetime.datetime.strptime('2013-04-25', '%Y-%m-%d')
+		search_date_end = datetime.datetime.now()		
+		search_date_start = search_date_end - one_day		
+
+		# this keeps track of urls seen already
 		url_set = set()
 		
 		total_tweets = 0
 		total_articles = 0
 
-		while True: # keep going back in time until interrupt
+		while days_back: # keep going back days_back times or until index stops
+
+			# deal with date strings and objects
+			search_date_start_str = search_date_start.strftime("%Y-%m-%d")
+			search_date_end_str = search_date_end.strftime("%Y-%m-%d")			
+			search_date_start -= one_day
+			search_date_end -= one_day
 
 			# construct query string with or without keywords and usernames
 			q = ''
@@ -130,25 +148,16 @@ class TwitterNews(News):
 				if i != 0:
 					q += ' OR '
 				q += k
-
-			search_date_start_str = search_date_start.strftime("%Y-%m-%d")
-			search_date_end_str = search_date_end.strftime("%Y-%m-%d")			
-			search_date_start -= one_day
-			search_date_end -= one_day
-
 			q += ' since:%s until:%s' % (search_date_start_str,search_date_end_str)
-
 			print 'Getting tweets for %s' % (search_date_end_str)
 
+			# construct url
 			params= TWITTER_PARAMS % urllib.quote_plus(q)
 			url = TWITTER_SEARCH_URL + params
-			# if until:
-			# url += '&until=' + until
 
+			# submit and parse request
 			response = requests.get(url, headers=self.twitter_auth).json()
 			start = datetime.datetime.now()
-
-			# this monster extracts the urls
 			tweets = response.get('statuses')
 			total_tweets += len(tweets)
 
@@ -166,9 +175,10 @@ class TwitterNews(News):
 				url_set = url_set | page_url_set
 				self.db_insert()
 			else:
-				print response
-				print q
+				print 'Reached the end of the index'
 				break
+
+			days_back -= 1
 
 			end = datetime.datetime.now()
 			diff = (end - start).total_seconds()

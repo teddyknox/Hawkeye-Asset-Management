@@ -10,11 +10,8 @@ from news import TwitterNews
 # apple.db_close()
 
 twitter = TwitterNews('Resources/articles.db')
-twitter.db_create()
-twitter.authenticate()
 
 # Twitter usernames & keywords
-usernames = [] # ['ReutersBiz', 'FinancialTimes']
-keywords = ['$AAPL']
-
-twitter.scrape('AAPL', usernames, keywords)
+# hardcore hardcoding of query tuples [('SYMBOL', ['KEYWORDS', ...], ['USERNAMES', ...]), ...]
+query_tuples = [('AAPL', [], []), ('GOOG', [], []),('NFLX', [], []),('TSLA', ['Tesla Motors'], []),('FB', [], [])]
+twitter.scrape_wrapper(query_tuples, 1)

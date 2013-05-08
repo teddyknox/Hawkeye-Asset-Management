@@ -3,3 +3,6 @@ sqlite3
 requests
 beautifulsoup4
 lxml
+numpy
+pyml
+matplotlib
