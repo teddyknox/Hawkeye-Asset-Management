@@ -1,12 +1,27 @@
 import feedparser as fp
 import sqlite3
 import requests
+<<<<<<< HEAD
+import grequests
+=======
 # import grequests
+>>>>>>> 69fea863a589b7b73946b7055ad18fbbb6a5f4a8
 from bs4 import BeautifulSoup
 import urlparse
 from time import sleep
 import datetime
 from sys import stdout
+<<<<<<< HEAD
+# from collections import namedtuple
+# Article = namedtuple("Article", "date source symbol title content") # much faster lookup than a dictionary
+
+# apple_alerts = fp.parse('http://www.google.com/alerts/feeds/16383881814015614047/13906298515147385431') # Apple Google Alert
+# apple_news = fp.parse('https://www.google.com/finance/company_news?q=NASDAQ:AAPL&ei=aLx5UZCaO9GL0QHKgAE&output=rss') # Apple Google Finance
+# for article in apple_alerts.entries + apple_news.entries:
+# 	print article.title
+
+READABILITY_URL = 'http://www.readability.com/api/content/v1/parser?token=c250a39459a247284924dfb275d9797082f9b420&url='
+=======
 import datetime
 import base64
 import urllib
@@ -28,6 +43,7 @@ CONSUMER_SECRET = '4GCgk3ZSAitEb4iRZjQsLwQi9T21QJ87mROsXajxaeA'
 # throttling time constants
 READABILITY_THROTTLE = 0.1
 TWITTER_THROTTLE = 5
+>>>>>>> 69fea863a589b7b73946b7055ad18fbbb6a5f4a8
 
 class News(object):
 
@@ -39,6 +55,8 @@ class News(object):
 	def db_open(self):
 		self.conn = sqlite3.connect(self.db_name)
 
+<<<<<<< HEAD
+=======
 	def readability(self, url, symbol, date):
 		parse_url = READABILITY_URL % url
 		response = requests.get(parse_url)
@@ -62,6 +80,7 @@ class News(object):
 		else:
 			return False
 
+>>>>>>> 69fea863a589b7b73946b7055ad18fbbb6a5f4a8
 	def db_close(self):
 		self.conn.close()
 		self.conn = False
@@ -70,7 +89,11 @@ class News(object):
 		if not self.conn:
 			self.db_open()
 		c = self.conn.cursor()
+<<<<<<< HEAD
+		c.execute('''CREATE TABLE IF NOT EXISTS articles (date text, source text, symbol text, title text, content text, url text, image_url text)''')
+=======
 		c.execute('''CREATE TABLE IF NOT EXISTS articles (date text, source text, symbol text, title text, content text, url text, image_url text, UNIQUE (title))''')
+>>>>>>> 69fea863a589b7b73946b7055ad18fbbb6a5f4a8
 		self.conn.commit()
 
 	def db_insert(self):
@@ -80,7 +103,11 @@ class News(object):
 			c = self.conn.cursor()
 			# filtered_articles = filter(lambda a: a['status'] == 200, self.articles)
 			ready_articles = map(lambda a: (a['date'], a['source'], a['symbol'], a['title'], a['content'], a['url'], a['image_url']), self.articles)
+<<<<<<< HEAD
+			c.executemany('INSERT INTO articles VALUES (?, ?, ?, ?, ?, ?, ?)', ready_articles)
+=======
 			c.executemany('INSERT OR IGNORE INTO articles VALUES (?, ?, ?, ?, ?, ?, ?)', ready_articles)
+>>>>>>> 69fea863a589b7b73946b7055ad18fbbb6a5f4a8
 			self.conn.commit()
 		else:
 			print "No articles to commit."
@@ -92,6 +119,11 @@ class News(object):
 		rows = c.execute('SELECT * FROM articles WHERE symbol=?', (symbol,))
 		return rows
 
+<<<<<<< HEAD
+class GoogleFinanceNews(News):
+	# def __init__(self, symbol):
+	# 	pass
+=======
 class TwitterNews(News):
 
 	def authenticate(self):
@@ -203,6 +235,7 @@ class GoogleFinanceNews(News):
 			stdout.flush()
 			google_url = article_div.find('a')['href'] # get first link per item
 			readability(self.parse_google_url(google_url))
+>>>>>>> 69fea863a589b7b73946b7055ad18fbbb6a5f4a8
 
 	def parse_google_date(self, date_str):
 		''' Reformats Google's dates '''
@@ -211,6 +244,16 @@ class GoogleFinanceNews(News):
 		else: # string date
 			date = datetime.datetime.strptime(date_str, '%b %d, %Y').strftime('%Y-%m-%d')
 		return date
+<<<<<<< HEAD
+
+	def parse_readability_date(self, date_str):
+		''' Removes time from date '''
+		if date_str:
+			return date_str[0:10]
+		else:
+			return False
+=======
+>>>>>>> 69fea863a589b7b73946b7055ad18fbbb6a5f4a8
 	
 	def parse_google_url(self, google_url):
 		''' Extract the actual article url from the ?url= get parameter of the anchor href. '''
@@ -219,6 +262,42 @@ class GoogleFinanceNews(News):
 			return get_params['url'][0]
 		elif 'q' in get_params:
 			return get_params['q'][0]
+<<<<<<< HEAD
+
+	def scrape(self, lookup_symbol):
+		encoded_symbol = lookup_symbol.replace(':', '%3A')
+		url = 'https://www.google.com/finance/company_news?q=%s&num=10000' % encoded_symbol
+		request = requests.get(url)
+		html_doc = request.text
+		soup = BeautifulSoup(html_doc, 'lxml')
+		article_divs = soup.find_all("div", {"class": "g-section news sfe-break-bottom-16"})
+
+		parse_urls = []
+		google_dates = []
+		for i, article_div in enumerate(article_divs):
+			stdout.write('\r Parsing article %d' % i)
+			stdout.flush()
+
+			google_url = article_div.find('a')['href'] # get first link per item
+			parse_url = READABILITY_URL + self.parse_google_url(google_url)
+			google_date = self.parse_google_date(article_div.find('span', {'class': 'date'}).string)
+
+			response = requests.get(parse_url)
+			info = response.json()
+			if response.status_code == 200:
+				date = self.parse_readability_date(info['date_published']) or google_date
+				article = {
+					'title': 		info['title'],
+					'url': 			info['url'],
+					'content': 		BeautifulSoup(info['content']).get_text(),
+					'image_url':	info['lead_image_url'], # could be cool
+					'symbol':		lookup_symbol,
+					'source': 		info['domain'],
+					'date':			date,
+				}
+				self.articles.append(article)
+=======
+>>>>>>> 69fea863a589b7b73946b7055ad18fbbb6a5f4a8
 				
 			# source = article_div.find('span', {'class': 'src'}).string
 			# article = { date: date, source: source }
@@ -240,6 +319,9 @@ class GoogleFinanceNews(News):
 		# 	status = res.status_code
 
 	
+<<<<<<< HEAD
+
+=======
 # from collections import namedtuple
 # Article = namedtuple("Article", "date source symbol title content") # much faster lookup than a dictionary
 
@@ -256,3 +338,4 @@ class GoogleFinanceNews(News):
 # 		page = BeautifulSoup(requests.get(url).text, 'lxml')
 # 		top_story = page.find('div', {'class': 'topStory'})
 # 		top_story.find('h2')
+>>>>>>> 69fea863a589b7b73946b7055ad18fbbb6a5f4a8
