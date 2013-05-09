@@ -4,5 +4,6 @@ requests
 beautifulsoup4
 lxml
 numpy
-pyml
 matplotlib
+scipy
+pybrain
