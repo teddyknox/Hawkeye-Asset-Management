@@ -7,3 +7,5 @@ numpy
 matplotlib
 scipy
 pybrain
+ystockquote
+urllib
