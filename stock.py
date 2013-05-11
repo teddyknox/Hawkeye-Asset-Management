@@ -28,13 +28,17 @@ class Stock(object):
         url = "http://query.yahooapis.com/v1/public/yql?q="
         url += query + "&env=http%3A%2F%2Fdatatables.org%2Falltables.env"
 
+        # Launch Yahoo Request
         r = BeautifulSoup(requests.get(url).text)
         quotes = r.find_all("quote")
         # print r.prettify()
+
+        # If YQL Api is not down, simply calculate percent change
         if(len(quotes) > 0):
             p2 = float(quotes[0].close.string)
             p1 = float(quotes[1].close.string)
             self.percent_change = (p2 - p1) / (.5 * (p1 + p2)) * 100
+        # Otherwise call the ystockquote gem
         else:
             self.data = ystockquote.get_historical_prices(self.quote, convert_date(start_date), convert_date(end_date))
             days = len(self.data) - 1
