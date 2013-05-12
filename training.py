@@ -5,7 +5,6 @@ from stock import *
 import datetime
 import math
 import sqlite3
-from news import News
 import string
 import pickle
 
@@ -16,8 +15,6 @@ class Training(object):
 		self.start_date = start_date
 		self.end_date = end_date
 		self.stock = Stock(symbol)
-
-		self.news = News('Resources/articles.db')
 
 		self.stock_data = {}
 
@@ -94,10 +91,16 @@ class Training(object):
 		return d.lower()
 
 	def get_news_data(self):
+		conn = sqlite3.connect('articles.db')
+		c = conn.cursor()
 
-		''' assign or append to array? '''
-		self.positive_news_data = self.news.db_articles(self.symbol, self.positive_dates)
-		self.negative_news_data = self.news.db_articles(self.symbol, self.negative_dates)
+		for date in self.positive_dates:
+			for row in c.execute('SELECT content FROM articles WHERE symbol=? AND date=?', (self.symbol, date)):
+				self.positive_news_data.append(row)
+
+		for date in self.negative_dates:
+			for row in c.execute('SELECT content FROM articles WHERE symbol=? AND date=?', (self.symbol, date)):
+				self.negative_news_data.append(row)
 
 		self.pos_count, self.neg_count = len(self.positive_news_data), len(self.negative_news_data)
 
