@@ -9,3 +9,5 @@ scipy
 pybrain
 scikit-learn
 nltk
+ystockquote
+urllib
