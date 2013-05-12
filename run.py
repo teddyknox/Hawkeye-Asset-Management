@@ -1,3 +1,5 @@
+from news import TwitterNews
+
 twitter = TwitterNews('Resources/articles.db')
 # Twitter usernames & keywords
 # hardcore hardcoding of query tuples [('SYMBOL', ['KEYWORDS', ...], ['USERNAMES', ...]), ...]

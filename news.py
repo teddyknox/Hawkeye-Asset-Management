@@ -38,7 +38,7 @@ class News(object):
 	def db_open(self):
 		self.conn = sqlite3.connect(self.db_name)
 
-	def readability(self, url, symbol, date):
+	def parse_article(self, url, symbol, date):
 		parse_url = READABILITY_URL % url
 		response = requests.get(parse_url)
 		info = response.json()
@@ -84,12 +84,19 @@ class News(object):
 		else:
 			print "No articles to commit."
 
-	def db_articles(self, symbol):
+	def db_articles(self, symbol, for_dates=[]):
 		if not self.conn:
 			self.db_open()
 		c = self.conn.cursor()
-		rows = c.execute('SELECT * FROM articles WHERE symbol=?', (symbol,))
-		return rows
+
+		ret_articles = []
+		if for_dates:
+			for date in for_dates:
+				ret_articles += c.execute('SELECT title FROM articles WHERE symbol=? AND date=?', (symbol, date)):
+		else:
+			ret_articles = c.execute('SELECT * FROM articles WHERE symbol=?', (symbol,))
+
+		return ret_articles
 
 class TwitterNews(News):
 
@@ -108,7 +115,7 @@ class TwitterNews(News):
 		self.db_open()
 		self.authenticate()
 		for q in query_tuples:
-			self.scrape(q[0], stock[1], stock[2], days_back)
+			self.scrape(q[0], q[1], q[2], days_back)
 		self.db_close()
 
 	def scrape(self, symbol, keywords, usernames, days_back):
@@ -167,7 +174,7 @@ class TwitterNews(News):
 				page_url_set = set(urls)
 				for article_url in page_url_set:
 					if article_url not in url_set:
-						self.readability(article_url, symbol, search_date_start_str)
+						self.parse_article(article_url, symbol, search_date_start_str)
 						total_articles += 1
 						print '\tTweet %d, Article %d\t%s' % (total_tweets, total_articles, self.articles[-1]['title'])
 						sleep(READABILITY_THROTTLE)
@@ -201,7 +208,7 @@ class GoogleFinanceNews(News):
 			stdout.write('\r Parsing article %d' % i)
 			stdout.flush()
 			google_url = article_div.find('a')['href'] # get first link per item
-			readability(self.parse_google_url(google_url))
+			parse_article(self.parse_google_url(google_url))
 
 	def parse_google_date(self, date_str):
 		''' Reformats Google's dates '''

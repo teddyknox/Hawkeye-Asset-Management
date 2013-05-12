@@ -5,24 +5,28 @@ from stock import *
 import datetime
 import math
 import sqlite3
+from news import News
 import string
 import pickle
 
 class Training(object):
 
-	def __init__(self, quote, start_date, end_date):
-		'''
-		provide dates as (YYYY, MM, DD)
-		'''
-		self.quote = quote
+	def __init__(self, symbol, start_date, end_date):
+		self.symbol = quote
 		self.start_date = start_date
 		self.end_date = end_date
-		self.stock = Stock(quote)
+		self.stock = Stock(symbol)
+
+		self.news = News('Resources/articles.db')
+
 		self.stock_data = {}
+
 		self.positive_dates = []
 		self.negative_dates = []
+
 		self.positive_news_data = []
 		self.negative_news_data = []
+
 		self.weighted_features = {}
 		self.SDweight = 1   #used to change the number of standard deviations used to remove noise
 
@@ -43,13 +47,11 @@ class Training(object):
 			self.stock_data[datestring] = self.stock.percent_change
 			date = date+datetime.timedelta(days=1)
 
-
 	def mean(self, d):
 		sum = 0
 		for key in d:
 			sum += d[key]
 		return sum/len(d)
-
 
 	def stats(self, d):
 		m = self.mean(d)
@@ -83,17 +85,9 @@ class Training(object):
 		return d.lower()
 
 	def get_news_data(self):
-		conn = sqlite3.connect('articles.db')
-		c = conn.cursor()
-
-		for date in self.positive_dates:
-			for row in c.execute('SELECT title FROM articles WHERE symbol=? AND date=?', (self.quote, date)):
-				self.positive_news_data.append(row)
-
-		for date in self.negative_dates:
-			for row in c.execute('SELECT title FROM articles WHERE symbol=? AND date=?', (self.quote, date)):
-				self.negative_news_data.append(row)
-
+		''' assign or append to array? '''
+		self.positive_news_data = self.news.db_articles(self.symbol, self.positive_dates)
+		self.negative_news_data = self.news.db_articles(self.symbol, self.negative_dates)
 
 	def test_features(self, l):
 		'''
@@ -119,7 +113,6 @@ class Training(object):
 		for key in results:
 			results[key] = float(results[key])/n
 		return results
-
 
 	def weight_features(self, pos, neg):
 		'''
@@ -172,7 +165,7 @@ class Training(object):
 		'''
 		does it all and spits it into a file named [index].train
 		'''
-		self.get_stock_data()  #stock function not working yet (API issues on pots end)
+		self.get_stock_data() #stock function not working yet (API issues on pots end)
 		self.find_dates() #not fully tested, waiting working stock function
 
 		#self.positive_dates.append("2013-04-30")  #used for testing 
@@ -182,15 +175,10 @@ class Training(object):
 		self.all_weighted_features()
 
 		#save to pickle
-		f = open(self.quote+'.train', 'w')
+		f = open(self.symbol+'.train', 'w')
 		p = pickle.Pickler(f)
 		p.dump(self.find_extremes(self.weighted_features))
 		f.close()
-
-
-
-
-
 
 
 #t = Training("GOOG", datetime.date(2013,03,25), datetime.date(2013,03,26))
