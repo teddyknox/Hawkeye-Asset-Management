@@ -12,7 +12,7 @@ class Training(object):
 
 	def __init__(self, quote, start_date, end_date):
 		'''
-		provide dates as (YYYY, MM, DD)
+		provide dates as datetime.date(YYYY, MM, DD) object
 		'''
 		self.quote = quote
 		self.start_date = start_date
@@ -21,10 +21,12 @@ class Training(object):
 		self.stock_data = {}
 		self.positive_dates = []
 		self.negative_dates = []
+		self.pos_count = 0
+		self.neg_count = 0
 		self.positive_news_data = []
 		self.negative_news_data = []
 		self.weighted_features = {}
-		self.SDweight = 1   #used to change the number of standard deviations used to remove noise
+		self.SDweight = .5   #used to change the number of standard deviations used to remove noise
 
 	def correct_len(self, i):
 		if len(i) == 1:
@@ -35,10 +37,16 @@ class Training(object):
 		date = self.start_date
 
 		while date < self.end_date:
+			if date.weekday() == 5:
+				date += datetime.timedelta(days=2)
+			if date.weekday() == 6:
+				date += datetime.timedelta(days=1)
 			prevdate = date - datetime.timedelta(days=1)
+			if prevdate.weekday() == 6:
+				prevdate -= datetime.timedelta(days=2)
 			datestring = str(date.year) + "-" + self.correct_len(str(date.month)) + "-" + self.correct_len(str(date.day))
 			prevdatestring = str(prevdate.year) + "-" + self.correct_len(str(prevdate.month)) + "-" + self.correct_len(str(prevdate.day))
-			print prevdatestring, datestring
+			# print prevdatestring, datestring  #for debugging 
 			self.stock.get_percent_change(prevdatestring, datestring)
 			self.stock_data[datestring] = self.stock.percent_change
 			date = date+datetime.timedelta(days=1)
@@ -65,7 +73,7 @@ class Training(object):
 		m = self.mean(d)
 		for key in d:
 			value = d[key]
-			if math.fabs(value) - math.fabs(m) > sd*self.SDweight:
+			if math.fabs(value - m) > sd*self.SDweight:
 				if value > m:
 					positive.append(key)
 				else:
@@ -73,10 +81,11 @@ class Training(object):
 		return positive, negative
 
 	def find_dates(self):
-		self.positive_dates, self.negative_dates = find_extremes(self.stock_data)
+		self.positive_dates, self.negative_dates = self.find_extremes(self.stock_data)
+
 
 	def scrub_news(self, a):
-		b = a.replace("/n", '').replace('(u','')
+		b = a.replace("\n", '').replace('(u','')
 		p = set(string.punctuation + string.digits)
 		c = ''.join(ch for ch in b if ch not in p)
 		d = c.replace(" u ", '')
@@ -87,12 +96,14 @@ class Training(object):
 		c = conn.cursor()
 
 		for date in self.positive_dates:
-			for row in c.execute('SELECT title FROM articles WHERE symbol=? AND date=?', (self.quote, date)):
+			for row in c.execute('SELECT content FROM articles WHERE symbol=? AND date=?', (self.quote, date)):
 				self.positive_news_data.append(row)
 
 		for date in self.negative_dates:
-			for row in c.execute('SELECT title FROM articles WHERE symbol=? AND date=?', (self.quote, date)):
+			for row in c.execute('SELECT content FROM articles WHERE symbol=? AND date=?', (self.quote, date)):
 				self.negative_news_data.append(row)
+
+		self.pos_count, self.neg_count = len(self.positive_news_data), len(self.negative_news_data)
 
 
 	def test_features(self, l):
@@ -162,18 +173,33 @@ class Training(object):
 		'''
 		self.single_word_features()
 
+		#others...
+
 	def get_feature_lists(self):
 		'''
 		returns ([postive features], [negative features])
 		'''
-		return self.find_extremes(self.weighted_features)
+		pos_list, neg_list = self.find_extremes(self.weighted_features)
+
+		p = {}
+		n = {}
+
+		for f in pos_list:
+			p[f] = self.weighted_features[f]
+
+		for f in neg_list:
+			n[f] = self.weighted_features[f] * -1
+
+
+		return p,n
+
 
 	def train_to_pickle(self):
 		'''
 		does it all and spits it into a file named [index].train
 		'''
-		self.get_stock_data()  #stock function not working yet (API issues on pots end)
-		self.find_dates() #not fully tested, waiting working stock function
+		self.get_stock_data() 
+		self.find_dates() 
 
 		#self.positive_dates.append("2013-04-30")  #used for testing 
 		#self.negative_dates.append("2013-05-01")  #while stocks are down
@@ -181,10 +207,14 @@ class Training(object):
 		self.get_news_data()
 		self.all_weighted_features()
 
+		t_count = self.pos_count + self.neg_count
+
 		#save to pickle
 		f = open(self.quote+'.train', 'w')
 		p = pickle.Pickler(f)
-		p.dump(self.find_extremes(self.weighted_features))
+
+		pos, neg = self.get_feature_lists()
+		p.dump((pos, neg, float(self.pos_count)/t_count, float(self.neg_count)/t_count))
 		f.close()
 
 
@@ -197,7 +227,7 @@ class Training(object):
 #t.get_stock_data()
 #print t.stock_data
 
-f = Training("AAPL", datetime.date(2013,03,25), datetime.date(2013,03,26))
+f = Training("AAPL", datetime.date(2013,04,24), datetime.date(2013,05,03))
 f.train_to_pickle()
 #f.positive_dates.append("2013-04-30")
 #f.negative_dates.append("2013-05-01")

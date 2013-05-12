@@ -40,6 +40,6 @@ def convert_date(date):
 
 
 
-stock = Stock("GOOG")
-stock.get_percent_change("2013-3-25", "2013-3-26")
-print stock.percent_change
+#stock = Stock("GOOG")
+#stock.get_percent_change("2013-3-25", "2013-3-26")
+#print stock.percent_change
