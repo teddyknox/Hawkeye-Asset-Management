@@ -70,7 +70,7 @@ def test_all_stocks(training_date_1, training_date_2, test_date_1, test_date_2):
 		result = test_classifiers(s, training_date_1, training_date_2, test_date_1, test_date_2)
 		accuracies.append(result)
 
-	print "Overall average accuracy of " + str(sum(accuracies)/len(accuracies)) + "%"
+	print "Overall average accuracy of " + str(sum(accuracies)/len(accuracies)*100) + "%"
 
 test_all_stocks(datetime.date(2013,04,24), datetime.date(2013,05,02), datetime.date(2013,05,02), datetime.date(2013,05,03))
 
