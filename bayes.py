@@ -69,8 +69,6 @@ class Bayes(object):
 		self.get_features()
 		b = self.bayes()
 
-		print b
-
 		if b < 0:
 			print str(-100*b) + '% chance of NEGATIVE performance'
 			return False
@@ -83,8 +81,8 @@ class Bayes(object):
 			print "uncertain"
 
 
-b = Bayes('AAPL')
-b.prob_at_date('2013-05-02')
+#b = Bayes('AAPL')
+#b.prob_at_date('2013-05-02')
 
 
 

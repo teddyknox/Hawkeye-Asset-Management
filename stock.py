@@ -48,13 +48,13 @@ class Stock(object):
             self.percent_change = (p2 - p1) / (.5 * (p1 + p2)) * 100
 
 
-<<<<<<< HEAD
+#<<<<<<< HEAD
 
 #stock = Stock("GOOG")
 #stock.get_percent_change("2013-3-25", "2013-3-26")
 #print stock.percent_change
-=======
+#=======
 def convert_date(date):
     """Converts dates from our standard format to """
     return date.replace("-", "")
->>>>>>> f8734fc2dd2bf8c91cde019e77aff52a797b5efe
+#>>>>>>> f8734fc2dd2bf8c91cde019e77aff52a797b5efe

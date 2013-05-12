@@ -227,8 +227,8 @@ class Training(object):
 #t.get_stock_data()
 #print t.stock_data
 
-f = Training("AAPL", datetime.date(2013,04,24), datetime.date(2013,05,03))
-f.train_to_pickle()
+#f = Training("AAPL", datetime.date(2013,04,24), datetime.date(2013,05,03))
+#f.train_to_pickle()
 #f.positive_dates.append("2013-04-30")
 #f.negative_dates.append("2013-05-01")
 #f.get_news_data()
