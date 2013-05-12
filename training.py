@@ -42,6 +42,7 @@ class Training(object):
 		date = self.start_date
 
 		while date < self.end_date:
+
 			if date.weekday() == 5:
 				date += datetime.timedelta(days=2)
 			if date.weekday() == 6:
@@ -49,6 +50,7 @@ class Training(object):
 			prevdate = date - datetime.timedelta(days=1)
 			if prevdate.weekday() == 6:
 				prevdate -= datetime.timedelta(days=2)
+
 			datestring = str(date.year) + "-" + self.correct_len(str(date.month)) + "-" + self.correct_len(str(date.day))
 			prevdatestring = str(prevdate.year) + "-" + self.correct_len(str(prevdate.month)) + "-" + self.correct_len(str(prevdate.day))
 			# print prevdatestring, datestring  #for debugging 
@@ -57,17 +59,14 @@ class Training(object):
 			date = date+datetime.timedelta(days=1)
 
 	def mean(self, d):
-		sum = 0
-		for key in d:
-			sum += d[key]
-		return sum/len(d)
+		return sum(d.values())/float(len(d))
 
 	def stats(self, d):
 		m = self.mean(d)
 		t = []
 		for key in d:
 			t.append((d[key] - m)**2)
-		return math.sqrt(sum(t)/len(d))
+		return math.sqrt(sum(t)/float(len(d)))
 
 	def find_extremes(self, d):
 		positive = []
