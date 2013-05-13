@@ -1,15 +1,44 @@
 # Opting for a procedural approach
 
 from news import News
+from sklearn import svm
+import math
 
-def article_feature_extractor(title, author, source, content):
-	pass
+news = News('Resources/articles.db')
+symbols = ['AAPL', 'GOOG', 'NFLX', 'TSLA', 'FB']
 
-def get_articles(symbol, date):
-	return News('Resources/articles.db').db_articles(symbol)
+def main():
+	model = train()
+	prediction = predict()
 
+def train():
+	docs = []
+	labels = []
+	for sym in symbols: # training symbols together
+		start, end = news.symbol_data_date_range(sym)
+		if start and end:
+			date = start
+			end += datetime.timedelta(days=1)
+			while date.date() != end.date():
+				articles = news.db_articles(sym, date)
+				change = get_symbol_change(sym, date)
 
-def get_symbol_percent_change(symbol, date):
+				label = change/math.fabs(change) # so 1 or -1
+				for a in articles:
+					v = article_features(a[1], a[3], a[4])
+					docs.append(v)
+					labels.append(label)
+	model = svm.SVC()
+	model.fit(docs, labels)
+	return model
+
+def predict(model, docs):
+	return model.predict(docs)
+
+def article_features(source, title, content):
+	return [0,0]
+
+def get_symbol_change(symbol, date):
 	"""Pulls data from Yahoo's API and calculates the percent change from the start data to the end date."""
 
 	daynum = date.weekday()
@@ -52,5 +81,3 @@ def get_symbol_percent_change(symbol, date):
 		p1 = float(self.data[days][4])
 		return (p2 - p1) / (.5 * (p1 + p2)) * 100
 
-news = News('Resources/articles.db')
-articles = news.db_articles()

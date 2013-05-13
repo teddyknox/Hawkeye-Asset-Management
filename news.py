@@ -3,8 +3,7 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup
 import urlparse
-from time import sleep
-import datetime
+import time
 from sys import stdout
 import datetime
 import base64
@@ -84,19 +83,33 @@ class News(object):
 		else:
 			print "No articles to commit."
 
-	def db_articles(self, symbol, for_dates=[]):
+	def db_articles(self, symbol, date=None):
+
 		if not self.conn:
 			self.db_open()
 		c = self.conn.cursor()
 
-		ret_articles = []
-		if for_dates:
-			for date in for_dates:
-				ret_articles += c.execute('SELECT title FROM articles WHERE symbol=? AND date=?', (symbol, date)):
+		if date:
+			date_str = date.strftime('%Y-%m-%d')
+			return list(c.execute('SELECT title FROM articles WHERE symbol=? AND date=?', (symbol, date_str)))
 		else:
-			ret_articles = c.execute('SELECT * FROM articles WHERE symbol=?', (symbol,))
+			return list(c.execute('SELECT * FROM articles WHERE symbol=?', (symbol,)))
 
-		return ret_articles
+	def symbol_data_date_range(self, symbol):		
+		if not self.conn:
+			self.db_open()
+		c = self.conn.cursor()
+		try:
+			min_row = c.execute('SELECT date from articles WHERE symbol=? ORDER BY date ASC LIMIT 1', (symbol,))
+			min_date_str = next(min_row)[0]
+			max_row = c.execute('SELECT date from articles WHERE symbol=? ORDER BY date DESC LIMIT 1', (symbol,))
+			max_date_str = next(max_row)[0]
+		except StopIteration:
+			return None, None
+
+		min_date = datetime.datetime.strptime(min_date_str, '%Y-%m-%d')
+		max_date = datetime.datetime.strptime(max_date_str, '%Y-%m-%d')
+		return min_date, max_date
 
 class TwitterNews(News):
 
@@ -177,7 +190,7 @@ class TwitterNews(News):
 						self.parse_article(article_url, symbol, search_date_start_str)
 						total_articles += 1
 						print '\tTweet %d, Article %d\t%s' % (total_tweets, total_articles, self.articles[-1]['title'])
-						sleep(READABILITY_THROTTLE)
+						time.sleep(READABILITY_THROTTLE)
 				url_set = url_set | page_url_set
 				self.db_insert()
 			else:
@@ -189,7 +202,7 @@ class TwitterNews(News):
 			end = datetime.datetime.now()
 			diff = (end - start).total_seconds()
 			if diff < TWITTER_THROTTLE:
-				sleep(TWITTER_THROTTLE - diff) # throttling for twitter
+				time.sleep(TWITTER_THROTTLE - diff) # throttling for twitter
 
 
 class GoogleFinanceNews(News):
