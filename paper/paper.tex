@@ -63,13 +63,20 @@ The first is to extract sentiment from each individual article. Unfortunately, h
 Our training algorithm for naive bayes continued even further into this line of thinking and aggregated all articles from dates with outside of one standard deviate from the mean stock performance for a given date range into two sets, one linked to positive change, one linked to negative. In this way, we removed the noise caused by days that only experience very slight change on the market.
 
 \section{Scalable Vector Machines}
-
+\noindent
 
 \section{Results}
 
-Unfortunately, our data set remains quite small, so it is difficult to draw accurate conclusions on the success of our classifiers, but our initial testing returned 40\% accuracy using a naive bayes classifier and the techniques illustrated above. While this performance is below random, our data set makes any conclusions about its efficacy untenable.
+\noindent Unfortunately, our data set remains quite small, so it is difficult to draw accurate conclusions on the success of our classifiers, but our initial testing returned 40\% accuracy using a naive bayes classifier and the techniques illustrated above. While this performance is below random, our data set makes any conclusions about its efficacy untenable.
 
 \section{Conclusion}
+\noindent While we explored several promising and cutting edge applications in our project, our research still has a way to go before it is ready to hit the trading floors. Unfortunately, we never were able to fully test our hypothesis as we hit logistical issues with building this system. Regarding our news data, we had problems amassing a collection of news that corresponds to a particular company. While paid historic news APIs exist, our budget unfortunately would not let us run complete tests. Additionally, connecting to an official market data API would help us view a more detailed market response of a stock following the introduction of a piece of news.
+
+Unlike many areas in software development, the world of financial programming doesn't include many free or open source tools to employ. While our model didn't have the most promising result statistics, the poor output most likely stemmed from an incomplete dataset rather than a broken model. From reading several papers and researching others' work, Bayesian classifiers and Scalable Vector Machines have been able to hit accuracy rates of at least 70%. 
+
+If we had two more months work on this project, we would spend most of our time cultivating and improving the dataset while also discussing the feature extraction component. While the machine learning piece of the equation is easy to implement, managing a large dataset can be cumbersome and designing the best way to choose features for analysis in the articles would most likely require a good bit of strategy and testing.
+
+Our results from this project may not have been exemplary, however, we feel that we have made promising steps into a fragmented area with poor API documentation and proprietary services for a team with a nonexistent budget.
 
 
 \end{document}

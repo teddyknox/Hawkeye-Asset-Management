@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1368420118 "paper.tex" "paper.pdf" "paper" 1368420240
+["pdflatex"] 1368422080 "paper.tex" "paper.pdf" "paper" 1368422081
   "/usr/local/texlive/2012/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2012/texmf-dist/fonts/map/fontname/texfonts.map" 1272929888 3287 e6b82fe08f5336d4d5ebc73fb1152e87 ""
   "/usr/local/texlive/2012/texmf-dist/fonts/tfm/adobe/courier/pcrr7t.tfm" 1136768653 960 379cc0019370a9e0208a0a3f949f847a ""
@@ -42,9 +42,9 @@
   "/usr/local/texlive/2012/texmf.cnf" 1341108668 572 7ea7194897937febeb63145e1c3a1f03 ""
   "/usr/local/texlive/2012/texmf/web2c/texmf.cnf" 1336865692 31299 729e216d9b945005c0d4b079c0500bc9 ""
   "aaai.sty" 1368292891 13120 1afc8309534ee53b84b120f952555441 ""
-  "paper.aux" 1368420119 917 b0f1bdffedca33a18ae0404653d30f3b ""
-  "paper.out" 1368420119 233 98fa3414a31eba37fb33de6b3b1035a3 ""
-  "paper.tex" 1368420116 8598 8db96c7c25299692ec28695e1a5f113f ""
+  "paper.aux" 1368422081 1069 fda6d5b80449d035de241458a8c27591 ""
+  "paper.out" 1368422081 339 66d514e4ba948e055d6d965ed4e2379b ""
+  "paper.tex" 1368422080 10450 72f4bbd97eed6cbcc373098803b9a332 ""
   (generated)
   "paper.pdf"
   "paper.out"
