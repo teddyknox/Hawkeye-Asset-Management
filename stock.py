@@ -1,6 +1,6 @@
 import requests
 import urllib
-import ystocksymbol
+import ystockquote
 from bs4 import BeautifulSoup
 
 
@@ -19,7 +19,7 @@ class Stock(object):
 
         # Format Query for YQL
         q = 'select * from yahoo.finance.historicaldata where symbol = "%s" and startDate = "%s" and endDate = "%s"' % (self.symbol, start_date, end_date)
-        query = urllib.symbol_plus(q)
+        query = urllib.quote_plus(q)
 
         # Format URL for YQL
         url = "http://query.yahooapis.com/v1/public/yql?q="
@@ -37,7 +37,7 @@ class Stock(object):
             self.percent_change = (p2 - p1) / (.5 * (p1 + p2)) * 100
         # Otherwise call the ystocksymbol gem
         else:
-            self.data = ystocksymbol.get_historical_prices(self.symbol, convert_date(start_date), convert_date(end_date))
+            self.data = ystockquote.get_historical_prices(self.symbol, convert_date(start_date), convert_date(end_date))
             days = len(self.data) - 1
             # print self.data
             p2 = float(self.data[1][4])

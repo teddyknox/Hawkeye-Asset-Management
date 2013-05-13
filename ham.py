@@ -3,64 +3,98 @@
 from news import News
 from sklearn import svm
 import math
+from datetime import *
+import numpy as np
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import CountVectorizer
+import requests
+import urllib
+import ystockquote
+from bs4 import BeautifulSoup
 
-news = News('Resources/articles.db')
-symbols = ['AAPL', 'GOOG', 'NFLX', 'TSLA', 'FB']
+SYMBOLS = ['AAPL', 'GOOG', 'NFLX', 'TSLA', 'FB']
+BAG_OF_WORDS=0
+TRAIN_TEST_RATIO = 3 # e.g 3:1 would be 3
 
-def main():
-	model = train()
-	prediction = predict()
+def run():
+	news = News('Resources/articles.db')
+	raw = news.db_articles()
+	training, testing = divide_corpus(raw)
 
-def train():
-	docs = []
-	labels = []
-	for sym in symbols: # training symbols together
-		start, end = news.symbol_data_date_range(sym)
-		if start and end:
-			date = start
-			end += datetime.timedelta(days=1)
-			while date.date() != end.date():
-				articles = news.db_articles(sym, date)
-				change = get_symbol_change(sym, date)
+	training_labels = corpus_labels(training)
+	testing_labels = corpus_labels(testing)
 
-				label = change/math.fabs(change) # so 1 or -1
-				for a in articles:
-					v = article_features(a[1], a[3], a[4])
-					docs.append(v)
-					labels.append(label)
+	training_vectors = vectorize_corpus(training)
+	testing_vectors = vectorize_corpus(testing)
+
+	model = train_model(training_vectors, training_labels)
+	results = test_model(model, testing_vectors, testing_labels)
+
+def corpus_labels(corpus):
+	''' Returns a numpy array of integer labels that correspond to the corpus docs.
+	 	1 for a doc about a stock that happened to go up, -1 for a doc about a stock that went down '''
+	labels = np.zeros(len(corpus), dtype=np.int8)
+	for i, doc in enumerate(corpus):
+		date = datetime.strptime(doc[0], '%Y-%m-%d')
+		change = symbol_change(doc[2], date)
+		label = change/math.fabs(change) # => 1 or -1
+		labels[i] = label
+	return labels
+
+def divide_corpus(A):
+	''' Takes list param and returns (bigger, smaller) according to TRAIN_TEST_RATIO. '''
+	l = len(A)
+	B = A[:l-l/TRAIN_TEST_RATIO]
+	C = A[l-l/TRAIN_TEST_RATIO:]
+	return B, C
+
+def vectorize_corpus(corpus):
+	content = map(lambda x: x[4], corpus) # just article content
+	vectorizer = CountVectorizer(stop_words=stopwords.words('english'), ngram_range=(1, 2), token_pattern=ur'\b\w+\b', min_df=1)
+	return vectorizer.fit_transform(corpus)
+
+def train_model(vectors, labels):
 	model = svm.SVC()
-	model.fit(docs, labels)
+	model.fit(vectors, labels)
 	return model
 
-def predict(model, docs):
-	return model.predict(docs)
+def test_model(model, vectors, labels):
+	preds = model.predict(data)
+	correct = 0.0
+	total = len(preds)
+	for pred, act in zip(preds, labels):
+		if pred == act:
+			correct += 1
+	acc = correct/total
+	print "Accuracy: %d" % acc
+	return acc
 
-def article_features(source, title, content):
-	return [0,0]
+def convert_date(date):
+	return date.replace("-", "")
 
-def get_symbol_change(symbol, date):
+def symbol_change(symbol, date):
 	"""Pulls data from Yahoo's API and calculates the percent change from the start data to the end date."""
 
 	daynum = date.weekday()
 	if daynum == 0: # if monday
-		prevdate = date - datetime.timedelta(days=3)
+		prevdate = date - timedelta(days=3)
 
 	if daynum == 5: # if saturday
-		prevdate = date - datetime.timedelta(days=1)
-		date += datetime.timedelta(days=2)
+		prevdate = date - timedelta(days=1)
+		date += timedelta(days=2)
 
 	elif daynum == 6: # if sunday
-		prevdate = date - datetime.timedelta(days=2)
-		date += datetime.timedelta(days=1)
+		prevdate = date - timedelta(days=2)
+		date += timedelta(days=1)
 
 	else: # if Tuesday - Friday
-		prevdate = date - datetime.timedelta(days=1)
+		prevdate = date - timedelta(days=1)
 
 	date_str = date.strftime('%Y-%m-%d')
 	prevdate_str = prevdate.strftime('%Y-%m-%d')
 
 	q = 'select * from yahoo.finance.historicaldata where symbol = "%s" and startDate = "%s" and endDate = "%s"' % (symbol, date_str, prevdate_str)
-	query = urllib.symbol_plus(q)
+	query = urllib.quote_plus(q)
 
 	# Format URL for YQL
 	url = "http://query.yahooapis.com/v1/public/yql?q=" + query + "&env=http%3A%2F%2Fdatatables.org%2Falltables.env"
@@ -75,9 +109,10 @@ def get_symbol_change(symbol, date):
 		p1 = float(symbols[1].close.string)
 		self.percent_change = (p2 - p1) / (.5 * (p1 + p2)) * 100
 	else: # Otherwise call the ystocksymbol package
-		self.data = ystocksymbol.get_historical_prices(symbol, convert_date(start_date), convert_date(end_date))
+		self.data = ystockquote.get_historical_prices(symbol, convert_date(date_str), convert_date(prevdate_str))
 		days = len(self.data) - 1
 		p2 = float(self.data[1][4])
 		p1 = float(self.data[days][4])
 		return (p2 - p1) / (.5 * (p1 + p2)) * 100
 
+run()

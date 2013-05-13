@@ -83,27 +83,45 @@ class News(object):
 		else:
 			print "No articles to commit."
 
-	def db_articles(self, symbol, date=None):
+	def db_articles(self, symbol=None, date=None):
 
 		if not self.conn:
 			self.db_open()
 		c = self.conn.cursor()
 
-		if date:
-			date_str = date.strftime('%Y-%m-%d')
-			return list(c.execute('SELECT title FROM articles WHERE symbol=? AND date=?', (symbol, date_str)))
+		if symbol:
+			if date:
+				date_str = date.strftime('%Y-%m-%d')
+				return list(c.execute('SELECT title FROM articles WHERE symbol=? AND date=?', (symbol, date_str)))
+			else:
+				return list(c.execute('SELECT * FROM articles WHERE symbol=?', (symbol,)))
 		else:
-			return list(c.execute('SELECT * FROM articles WHERE symbol=?', (symbol,)))
+			if date:
+				date_str = date.strftime('%Y-%m-%d')
+				return list(c.execute('SELECT title FROM articles WHERE AND date=?', (date_str,)))
+			else:
+				return list(c.execute('SELECT * FROM articles')) # dump database into memory yo
 
-	def symbol_data_date_range(self, symbol):		
+
+	def symbol_data_date_range(self, symbol=None):
+		''' 
+			Returns the inclusive date range as (start, end) of the corpus, optionally restricted to a given symbol.
+			the dates are represented by datetime objects
+		 '''
 		if not self.conn:
 			self.db_open()
 		c = self.conn.cursor()
 		try:
-			min_row = c.execute('SELECT date from articles WHERE symbol=? ORDER BY date ASC LIMIT 1', (symbol,))
-			min_date_str = next(min_row)[0]
-			max_row = c.execute('SELECT date from articles WHERE symbol=? ORDER BY date DESC LIMIT 1', (symbol,))
-			max_date_str = next(max_row)[0]
+			if symbol:
+				min_row = c.execute('SELECT date from articles WHERE symbol=? ORDER BY date ASC LIMIT 1', (symbol,))
+				min_date_str = next(min_row)[0]
+				max_row = c.execute('SELECT date from articles WHERE symbol=? ORDER BY date DESC LIMIT 1', (symbol,))
+				max_date_str = next(max_row)[0]
+			else:
+				min_row = c.execute('SELECT date from articles ORDER BY date ASC LIMIT 1')
+				min_date_str = next(min_row)[0]
+				max_row = c.execute('SELECT date from articles ORDER BY date DESC LIMIT 1')
+				max_date_str = next(max_row)[0]
 		except StopIteration:
 			return None, None
 

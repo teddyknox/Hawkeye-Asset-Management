@@ -11,3 +11,5 @@ scikit-learn
 nltk
 ystockquote
 urllib
+cython
+scipy
