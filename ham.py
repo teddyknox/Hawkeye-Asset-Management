@@ -21,8 +21,8 @@ def run():
 	raw = news.db_articles()
 	training, testing = divide_corpus(raw)
 
-	training_labels = corpus_labels(training)
-	testing_labels = corpus_labels(testing)
+	training, training_labels = corpus_labels(training)
+	testing, testing_labels = corpus_labels(testing)
 
 	training_vectors = vectorize_corpus(training)
 	testing_vectors = vectorize_corpus(testing)
@@ -32,14 +32,18 @@ def run():
 
 def corpus_labels(corpus):
 	''' Returns a numpy array of integer labels that correspond to the corpus docs.
-	 	1 for a doc about a stock that happened to go up, -1 for a doc about a stock that went down '''
-	labels = np.zeros(len(corpus), dtype=np.int8)
-	for i, doc in enumerate(corpus):
+	 	1 for a doc about a stock that happened to go up, -1 for a doc about a stock that went down. Removes data entry if no stock data.
+	 '''
+	filtered_corpus = []
+	labels = []
+	for doc in corpus:
 		date = datetime.strptime(doc[0], '%Y-%m-%d')
 		change = symbol_change(doc[2], date)
-		label = change/math.fabs(change) # => 1 or -1
-		labels[i] = label
-	return labels
+		if change: # check if we have stock data for the date
+			filtered_corpus.append(doc)
+			label = change/math.fabs(change) # => 1 or -1
+			labels.append(label)
+	return docs, np.array(labels, dtype=np.int8)
 
 def divide_corpus(A):
 	''' Takes list param and returns (bigger, smaller) according to TRAIN_TEST_RATIO. '''
@@ -79,7 +83,7 @@ def symbol_change(symbol, date):
 	if daynum == 0: # if monday
 		prevdate = date - timedelta(days=3)
 
-	if daynum == 5: # if saturday
+	elif daynum == 5: # if saturday
 		prevdate = date - timedelta(days=1)
 		date += timedelta(days=2)
 
