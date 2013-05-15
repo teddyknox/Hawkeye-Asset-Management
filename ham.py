@@ -3,6 +3,7 @@
 from news import News
 from sklearn import svm
 import math
+import sqlite3
 from datetime import *
 import numpy as np
 from nltk.corpus import stopwords
@@ -77,6 +78,57 @@ def convert_date(date):
 	return date.replace("-", "")
 
 def symbol_change(symbol, date):
+	daynum = date.weekday()
+	if daynum == 0: # if monday
+		prevdate = date - timedelta(days=3)
+
+	elif daynum == 5: # if saturday
+		prevdate = date - timedelta(days=1)
+		date += timedelta(days=2)
+
+	elif daynum == 6: # if sunday
+		prevdate = date - timedelta(days=2)
+		date += timedelta(days=1)
+
+	else: # if Tuesday - Friday
+		prevdate = date - timedelta(days=1)
+
+	# print "-"*30
+	# print date, "====>", date.weekday()
+	# print prevdate, "====>", prevdate.weekday()
+
+	date_str = date.strftime('%Y-%m-%d')
+	prevdate_str = prevdate.strftime('%Y-%m-%d')
+
+	db = sqlite3.connect('Resources/articles.db')
+	c = db.cursor()
+	r1 = list(c.execute("select price from quotes where symbol = '"+symbol+"' and date = '"+prevdate_str+"'"))
+	r2 = list(c.execute("select price from quotes where symbol = '"+symbol+"' and date = '"+date_str+"'"))
+
+	db.close()
+
+	if len(r1) == 0 or len(r2) == 0:
+		return False
+	# print prevdate_str, len(r1), date_str, len(r2)
+	
+	# while(len(r1) == 0):
+	# 	prevdate = prevdate - timedelta(days=1)
+	# 	prevdate_str = prevdate.strftime('%Y-%m-%d')
+	# 	r1 = list(c.execute("select price from quotes where symbol = '"+symbol+"' and date = '"+prevdate_str+"'"))
+
+	# while(len(r2) == 0):
+	# 	date = date + timedelta(days=1)
+	# 	date_str = date.strftime('%Y-%m-%d')
+	# 	r2 = list(c.execute("select price from quotes where symbol = '"+symbol+"' and date = '"+date_str+"'"))
+	else:
+		p1 = float(r1[0][0])
+		p2 = float(r2[0][0])
+		return (p2 - p1) / (.5 * (p1 + p2)) * 100
+
+	# print prevdate_str, p1, date_str, p2
+
+
+def symbol_change_old(symbol, date):
 	"""Pulls data from Yahoo's API and calculates the percent change from the start data to the end date."""
 
 	daynum = date.weekday()
@@ -111,7 +163,7 @@ def symbol_change(symbol, date):
 	if(len(symbols) > 0): 
 		p2 = float(symbols[0].close.string)
 		p1 = float(symbols[1].close.string)
-		self.percent_change = (p2 - p1) / (.5 * (p1 + p2)) * 100
+		return (p2 - p1) / (.5 * (p1 + p2)) * 100
 	else: # Otherwise call the ystocksymbol package
 		self.data = ystockquote.get_historical_prices(symbol, convert_date(date_str), convert_date(prevdate_str))
 		days = len(self.data) - 1
