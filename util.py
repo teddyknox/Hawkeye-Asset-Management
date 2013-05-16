@@ -1,6 +1,10 @@
 from datetime import *
 import sqlite3
 from random import shuffle
+import ystockquote
+from bs4 import BeautifulSoup
+import requests
+import urllib
 
 def double_shuffle(list1, list2): # shuffle two lists the same way. Used to shuffle both the labels and the docs in the dry run
 	list1_shuf = []
