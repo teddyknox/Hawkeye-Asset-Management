@@ -12,11 +12,39 @@ TRAIN_TEST_RATIO = 3 # e.g 3:1 would be 3
 
 def main():
 	model = svm.SVC(kernel='linear')
+	# vectorizer = IdfBagOfWords()
 	vectorizer = BagOfWords()
 	run(model, vectorizer)
-	print
-	print "Movie reviews data set"
-	dry_run(model, vectorizer)	
+	# print
+	# print "Movie reviews data set"
+	# dry_run(model, vectorizer)	
+
+def run(model, vectorizer):
+	news = News('Resources/articles.db')
+
+	print 'Reading articles from db...'
+	raw = news.db_articles()
+
+	print 'Dividing corpus...'
+	training, testing = divide_corpus(raw)
+
+	print 'Assigning stock market labels to documents...'
+	training, training_labels = corpus_labels(training)
+	testing, testing_labels = corpus_labels(testing)
+
+	print 'Reducing training content for vectorizer...'
+	training = map(lambda x: x[4], training) # 3 is title, 4 is body
+	testing = map(lambda x: x[4], testing)
+
+	print 'Extracting features and vectorizing the corpus...' 
+	training_vectors = vectorizer.fit_transform(training, training_labels)
+	testing_vectors = vectorizer.transform(testing)
+
+	print 'Training SVM...'
+	model.fit(training_vectors, training_labels)
+
+	print 'Testing SVM... done\n'
+	results = test_model(model, testing_vectors, testing_labels)
 
 def dry_run(model, vectorizer): # messy code to test classifier with movie reviews
 
@@ -39,34 +67,6 @@ def dry_run(model, vectorizer): # messy code to test classifier with movie revie
 
 	model.fit(training_vectors, training_labels)
 	results = test_model(model, testing_vectors, testing_labels)
-
-def run(model, vectorizer):
-	news = News('Resources/articles.db')
-
-	print 'Reading articles from db...'
-	raw = news.db_articles()
-
-	print 'Dividing corpus...'
-	training, testing = divide_corpus(raw)
-
-	print 'Assigning stock market labels to documents...'
-	training, training_labels = corpus_labels(training)
-	testing, testing_labels = corpus_labels(testing)
-
-	print 'Reducing training content for vectorizer...'
-	training = map(lambda x: x[4], training)
-	testing = map(lambda x: x[4], testing)
-
-	print 'Extracting features and vectorizing the corpus...' 
-	training_vectors = vectorizer.fit_transform(training, training_labels)
-	testing_vectors = vectorizer.transform(testing)
-
-	print 'Training SVM...'
-	model.fit(training_vectors, training_labels)
-
-	print 'Testing SVM... done\n'
-	results = test_model(model, testing_vectors, testing_labels)
-
 
 def corpus_labels(corpus):
 	''' Returns a numpy array of integer labels that correspond to the corpus docs.
@@ -123,7 +123,7 @@ class BagOfWords(Vectorizer):
 	def __init__(self):
 		self.skvectorizer = CountVectorizer(stop_words=stopwords.words('english'), ngram_range=(1, 2), token_pattern=ur'\b\w+\b', min_df=1)
 
-class TFIDFBagOfWords(Vectorizer):
+class IdfBagOfWords(Vectorizer):
 	def __init__(self):
 		self.skvectorizer = CountVectorizer(stop_words=stopwords.words('english'), ngram_range=(1, 2), token_pattern=ur'\b\w+\b', min_df=1)
 		self.sktransformer = TfidfTransformer()
