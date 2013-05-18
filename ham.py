@@ -135,15 +135,34 @@ class IdfBagOfWords(Vectorizer):
 	def transform(self, corpus):
 		vectors = self.skvectorizer.transform(corpus)
 		return self.sktransformer.transform(vectors)
-if __name__ == "__main__":
-	# svm = svm.SVC(kernel='linear')
-	# svm = svm.LinearSVC() 		
-	gnb = naive_bayes.GaussianNB()
-	bow = BagOfWords()
-	ham = HAM(gnb, bow)
-	acc =  ham.test_news_market()
+
+if __name__ == "__main__":		
+	mod = naive_bayes.GaussianNB()
+	vec = BagOfWords()
+	ham = HAM(mod, vec)
+	print 'Test Gaussian NB'
+	print ham.test_news_market()
+	ham.model = svm.SVC(kernel='linear')
+	print 'Test linear SVM'	
+	print ham.test_news_market()
+	ham.model = svm.LinearSVC()
+	print 'Test different implementation of Linear SVM'
+	print ham.test_news_market()
+
+	print '\nTesting all with IdfBagofWords\n'
+
+	ham.vectorizer = IdfBagOfWords()
+	ham.model = naive_bayes.GaussianNB()
+	print 'Test Gaussian NB'
+	print ham.test_news_market()
+	ham.model = svm.SVC(kernel='linear')
+	print 'Test linear SVM'	
+	print ham.test_news_market()
+	ham.model = svm.LinearSVC()
+	print 'Test different implementation of Linear SVM'
+	print ham.test_news_market()
 	# vectorizer = IdfBagOfWords()
-	print acc
+	
 	# print
 	# print "Movie reviews data set"
 	# dry_run()
