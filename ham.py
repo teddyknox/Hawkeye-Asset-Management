@@ -4,6 +4,7 @@ from util import *
 from news import News
 from sklearn import svm
 from sklearn import naive_bayes
+from sklearn.metrics import precision_score, recall_score, accuracy_score, classification_report
 import math
 import numpy as np
 from nltk.corpus import stopwords
@@ -20,7 +21,9 @@ class HAM(object):
 
 	def train_test(self):
 		self.model.fit(self.train_vecs, self.train_labs)
-		return self.model.score(self.test_vecs, self.test_labs)
+		preds = self.model.predict(self.test_vecs)
+		self.test_labs
+		print classification_report(preds, self.test_labs, [-1,1], ['Negative','Positive'])
 
 	def prep_news_data(self):
 		if not self.news_market_data:
@@ -134,43 +137,42 @@ if __name__ == "__main__":
 	ham.prep_news_data()
 
 	print 'Test Gaussian NB'
-	print "%.3f\n" % ham.train_test()
+	ham.train_test()
 
 	print 'Test linear SVM'	
 	ham.model = svm.SVC(kernel='linear')
-	print "%.3f\n" % ham.train_test()
+	ham.train_test()
 	
 	print 'Linear SVC'
 	ham.model = svm.LinearSVC()
-	print "%.3f\n" % ham.train_test()
 
 	print 'Test Multinomial Naive Bayes'
 	ham.model = naive_bayes.MultinomialNB()
-	print "%.3f\n" % ham.train_test()
+	ham.train_test()
 
 	print 'Test Bernoulli Naive Bayes'
 	ham.model = naive_bayes.BernoulliNB()
-	print "%.3f\n" % ham.train_test()
+	ham.train_test()
 
 	print '\nTesting all with IdfBagofWords\n'
 	ham.vectorizer = TfidfVectorizer(stop_words='english', max_features=10000, analyzer='word', ngram_range=(2, 3), token_pattern=ur'\b\w+\b', min_df=1)
 
 	print 'Test Gaussian NB'
 	ham.model = naive_bayes.GaussianNB()
-	print "%.3f\n" % ham.train_test()
+	ham.train_test()
 
 	print 'Test linear SVM'	
 	ham.model = svm.SVC(kernel='linear')
-	print "%.3f\n" % ham.train_test()
+	ham.train_test()
 
 	print 'Test Linear SVC'
 	ham.model = svm.LinearSVC()
-	print "%.3f\n" % ham.train_test()
+	ham.train_test()
 
 	print 'Test Multinomial Naive Bayes'
 	ham.model = naive_bayes.MultinomialNB()
-	print "%.3f\n" % ham.train_test()
+	ham.train_test()
 
 	print 'Test Bernoulli Naive Bayes'
 	ham.model = naive_bayes.BernoulliNB()
-	print "%.3f\n" % ham.train_test()
+	ham.train_test()
