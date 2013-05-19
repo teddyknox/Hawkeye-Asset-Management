@@ -1,4 +1,0 @@
-PATH=/usr/local/bin:/usr/local/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/teddyknox/.pythonbrew/bin:/usr/local/share/python:/opt/X11/bin:/usr/texbin:/Applications/Postgres.app/Contents/MacOS/bin:/Users/teddyknox/android-sdks/platform-tools:/Users/teddyknox/android-sdks/tools:/Users/teddyknox/.gsutil:/usr/texbin:/usr/local/share/npm/bin:/Users/teddyknox/.aws/bin
-
-#min   hour	monday	monnum	weekday	command
-0      3	*	*	*	python ~/Workspace/Courses/cs311/HAM/run.py
