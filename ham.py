@@ -2,8 +2,12 @@
 
 from util import *
 from news import News
+
 from sklearn import svm
 from sklearn import naive_bayes
+from sklearn.linear_model import SGDClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+
 from sklearn.metrics import precision_score, recall_score, accuracy_score, classification_report
 import math
 import numpy as np
@@ -151,7 +155,15 @@ if __name__ == "__main__":
 	ham.train_test()
 
 	print 'Test Bernoulli Naive Bayes'
-	ham.model = naive_bayes.BernoulliNB()
+	ham.model = naive_bayes.BernoulliNB(alpha=1.0, binarize=0.0, class_prior=None, fit_prior=True)
+	ham.train_test()
+
+	print 'Test Stochastic Gradient Descent'
+	ham.model = SGDClassifier(loss="hinge", penalty="l2")
+	ham.train_test()
+
+	print 'Test Gradient Boosting Classifier'
+	ham.model = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0)
 	ham.train_test()
 
 	print '\nTesting all with IdfBagofWords\n'
@@ -174,5 +186,13 @@ if __name__ == "__main__":
 	ham.train_test()
 
 	print 'Test Bernoulli Naive Bayes'
-	ham.model = naive_bayes.BernoulliNB()
+	ham.model = naive_bayes.BernoulliNB(alpha=1.0, binarize=0.0, class_prior=None, fit_prior=True)
+	ham.train_test()
+
+	print 'Test Stochastic Gradient Descent'
+	ham.model = SGDClassifier(loss="hinge", penalty="l2")
+	ham.train_test()
+
+	print 'Test Gradient Boosting Classifier'
+	ham.model = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0)
 	ham.train_test()
