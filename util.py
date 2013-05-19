@@ -5,6 +5,20 @@ import ystockquote
 from bs4 import BeautifulSoup
 import requests
 import urllib
+import re
+
+def get_current_price(symbol):
+    """Pulls the current stock price from Yahoo's website by scraping"""
+
+    symbol = symbol.lower()
+    url = "http://finance.yahoo.com/q?s=" + symbol + "&ql=1"
+
+    r = requests.get(url).text
+    search = "<span id=\"yfs_l84_%s\">([0-9]+\.[0-9]+)</span>" % symbol
+    price = re.search(search, r)
+    price = price.group(1)
+    return price
+
 
 def double_shuffle(list1, list2): # shuffle two lists the same way. Used to shuffle both the labels and the docs in the dry run
 	list1_shuf = []
