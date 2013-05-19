@@ -16,6 +16,12 @@ def double_shuffle(list1, list2): # shuffle two lists the same way. Used to shuf
 	    list2_shuf.append(list2[i])
 	return list1_shuf, list2_shuf
 
+def divide_list_by_ratio(A, ratio=3): # so the smaller list is 1/3 the size of the original
+	''' Takes list param and returns (bigger, smaller) according to TRAIN_TEST_RATIO. '''
+	l = len(A)
+	B = A[:l-l/ratio]
+	C = A[l-l/ratio:]
+	return B, C
 def db_symbol_change(symbol, date):
 	daynum = date.weekday()
 	if daynum == 0: # if monday

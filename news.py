@@ -222,7 +222,6 @@ class TwitterNews(News):
 			if diff < TWITTER_THROTTLE:
 				time.sleep(TWITTER_THROTTLE - diff) # throttling for twitter
 
-
 class GoogleFinanceNews(News):
 
 	def scrape(self, lookup_symbol):
@@ -316,7 +315,6 @@ class GoogleFinanceNews(News):
 		# for res, google_date in zip(responses, google_dates):
 		# 	status = res.status_code
 
-	
 # from collections import namedtuple
 # Article = namedtuple("Article", "date source symbol title content") # much faster lookup than a dictionary
 
