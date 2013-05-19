@@ -36,3 +36,11 @@ nosetests.xml
 
 Resources
 *sublime*
+
+# Latex Junk
+*.fls
+*.fdb_latexmk
+*.dvi
+*.aux
+*.log
+*.out
