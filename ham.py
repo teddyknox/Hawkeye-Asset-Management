@@ -5,6 +5,7 @@ from news import News
 from sklearn import naive_bayes
 from sklearn.metrics import precision_score, recall_score, accuracy_score, classification_report
 import math
+from random import choice
 import numpy as np
 # from nltk.corpus import stopwords
 # from nltk.stem.wordnet import WordNetLemmatizer
@@ -22,6 +23,10 @@ class HAM(object):
 		preds = self.model.predict(self.test_vecs)
 		self.test_labs
 		print classification_report(self.test_labs, preds, [-1,1], ['Negative','Positive'])
+
+	def print_doc_feats(self):
+		for feature in self.vectorizer.get_feature_names():
+			print feature
 
 	def prep_news_data(self):
 		if not self.news_market_data:
@@ -112,6 +117,11 @@ class HAM(object):
 		print "Predictions: %d UP, %d DOWN" % (up_count, down_count)
 		return acc
 
+class RandomClassifier(object):
+	def fit(self, A, B):
+		pass
+	def predict(self, A):
+		return [choice([-1, 1]) for i in range(len(A))]
 
 # class DocPreprocessor(object):
 # 	def __init__(self):

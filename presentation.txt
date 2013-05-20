@@ -1,5 +1,5 @@
 Hawkeye Asset Managment (HAM)
-Teddy Knox, Will Potter, Parker Woodsworth
+Teddy Knox, Parker Woodsworth, Will Potter
 Kauchak CS-311 2013
 
 How does anyone predict the movement of stocks?
@@ -16,7 +16,7 @@ What news did we use?
 		- but that doesn't go back far enough either
 	- Finally we got excited about searching Twitter for news story links...
 		- but found that their search index was limited to 7 days.
-		- So naturally we used the twitter data.
+		- So naturally we used the Twitter data.
 
 How did we scrape?
 	- Searched Twitter for '$AAPL' or whatever
@@ -28,6 +28,59 @@ Stock data
 	- Bloomberg machine in the library 
 	- both not so fun
 
-Problem Conception
+Machine Learning Tools
+	- Scikit-Learn
+	- Numpy
+	- Scipy
+
+Problem Formulation
 	- Supervised learning problem
-	- 
+	- label articles where the stock went up 1
+	- label articles where the stock went down -1
+	- So convert each document into a separate training vector
+	- Apply all of the classifiers!
+
+Feature Extraction Methods
+	- Bag of Words (n-grams)
+
+Classifiers we tried
+	- Gaussian Naive Bayes
+	- Linear Support Vector Machine
+	- Radial basis Support Vector Machine
+	- Bernoulli Naive Bayes
+	- Multinomial Naive Bayes
+	- Stochastic Gradient Descent
+	- Random Forrest Classifier (what the heck??)
+	- Gradient Boosting
+	- AdaBoost
+
+Results
+	With a database of 531 articles, we found that the AdaBoost Classifier gave us the best results.
+
+	Test AdaBoost Classifier
+	             precision    recall  f1-score   support
+
+	   Negative       0.15      0.87      0.25        15
+	   Positive       0.93      0.27      0.42       104
+
+	avg / total       0.83      0.34      0.40       119
+
+So basically we're gonna be rich 
+
+Limitations
+	- We tested our accuracy in labeling individual articles.. not market days of articles
+		- because our data told us to
+
+	- Bringing this to market would mean doing a few things
+		- increasing temporal resolution from once a day to once a minute or something
+		- averaging article predictions together
+		- developing a prediction confidence threshold so that HAM doesn't go HAM
+		- developing a trading strategy
+
+All of this hinges on our ability to predict article sentiment data
+
+If we had a million dollars
+	- we'd buy into an historical news/stock data API from Bloomberg or Reuters
+
+Thanks
+
