@@ -41,7 +41,7 @@ ham.model = GradientBoostingClassifier()#n_estimators=100, learning_rate=1.0, ma
 ham.train_test('Gradient Boosting Classifier', charts)
 
 ham.model = RandomForestClassifier(n_estimators=100)
-ham.train_test('Random Forrest Classifier', charts)
+ham.train_test('Random Forest Classifier', charts)
 
 ham.model = DecisionTreeClassifier()
 ham.train_test('Decision Tree Classifier', charts)
