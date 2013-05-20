@@ -28,7 +28,7 @@ class Training(object):
 		self.negative_news_data = []
 
 		self.weighted_features = {}
-		self.SDweight = .5   #used to change the number of standard deviations used to remove noise
+		self.SDweight = 1   #used to change the number of standard deviations used to remove noise
 
 	def correct_len(self, i):
 		if len(i) == 1:

@@ -4,7 +4,6 @@
 from load_data import *
 import pickle
 import sqlite3
-import features
 import string
 
 class Bayes(object):

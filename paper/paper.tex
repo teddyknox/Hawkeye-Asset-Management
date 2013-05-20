@@ -25,59 +25,162 @@ Will Potter\\
 \maketitle
 \begin{abstract}
 \begin{quote}
-The interest of the financial sector in automated trading algorithms has given rise to entirely new fields of practical study in the disciplines of computer science and quantative finance. In most circumstances, the trajectory of the stock market is correlated with the investor sentiment, which is typically derived from analysis of financial news and metrics. We aimed to model market sentiment by the supervised analysis of financial news. We use Twitter feeds to aggregate stock-specific news and then label thos stories with their associated market response with the Yahoo Finance API. We then applied a variety of classfier models to our data, such as naïve bayes and kenel-based support vector machine, to classify aggregated articles by their associated market response. We achieved the most accuracy with a Bernoulli Naive Bayes model, with a peak F-1 score of 76\%.
+The interest of the financial sector in automated trading algorithms has given rise to entirely new fields of practical study in the disciplines of computer science and quantitative finance. In most circumstances, the trajectory of the stock market is correlated with the investor sentiment, which is typically derived from analysis of financial news and metrics. We aimed to model market sentiment by the supervised analysis of financial news. We use Twitter feeds to aggregate stock-specific news and then label these stories with their associated market response with the Yahoo Finance API. We then applied a variety of classier models to our data, such as naive bayes and kernel-based support vector machine, to classify aggregated articles by their associated market response. We achieved the most accuracy with a Bernoulli Naive Bayes model, with a peak F-1 score of 76\%.
 \end{quote}
 \end{abstract}
 
 \section{Introduction}
-\noindent Information dictates stock performance. As is true with any market driven good, accurate and clear information is arguably the most important resource for any investor. With the invention of the internet, information spreads in greater volumes with unprecedented velocity. Social media sites, like Twitter and Facebook, democratize the spread of information and allow anyone to share the latest popular story with the rest of the world before a reporter has arrived on scene. 
+\noindent Information dictates stock performance. As with any market driven good, accurate and clear information is the most important resource for any investor. In the case of trading stocks and commodities, the global perception of information is the most important single set of data; stock prices do not change as a result of news, but rather the perceived implication of that news. In recent years, social media sites have allowed users world wide to serve as crowd-sourced curators of news media. Articles that are shared on social media are most likely to represent the global perception of media.
 
-Unfortunately, following the latest occurrences can be tedious due to the sheer volume of news that we are exposed to on a daily basis. Investors, averse to operating on unclear information, still rely on traditional news and media outlets as well as official releases from companies and in person interactions to make actionable decisions.
+While certain firms, like the U.K. based DCM Capital, have begun exploring social media analysis to inform investment decisions, the practice has not become widespread, and most investors simply rely on traditional news sources for their great authority. In our approach, we hoped to maintain the legitimacy of authoritative news sources while leveraging the pace, breadth, and crowd-sourced curation provided by social media.
 
-While certain firms, like the U.K. based DCM Capital, have begun exploring social media analysis to inform investment decisions, there exists no method of using social media and traditional media sources to predict the future performance of stocks. We sought out analyze a wide array of news sources relating to particular stocks to try and predict the future performance of a stock based off of historical media and its subsequent performance. 
-
-We wanted to leverage the rapid transfer and breadth of information seen with sites like Twitter, while still using on the content written by authoritative media sources. In using both types of media, we hoped to craft the most accurate perspective possible regarding the future performance. This way, investors would not be excluded from the large unfelt benefits of social media in the equity analysis world and be able to maximize return on their portfolios. After all, if perception influences a stock's performance and media influences perception, shouldn't the media influence a stock's performance?
-
-Our goal is to not replace the traditional methods of analysis, but rather to complement existing methods and to provide another source of information that synthesizes and classifies an a stock based on the response from similar articles.
+Our goal is to not replace the traditional methods of analysis, but rather to complement extant methods with another technique that fully takes advantage of the true breadth and depth of information available.
 
 \section{Algorithm}
-\noindent Our high-level strategy was to pull news related to a particular stock from various online sources and track the performance of the stock immediately following the release of the article. The system would ideally train a classifier from previous data and then be able to look at realtime news and classify the performance of a stock in the immediate future.
+\noindent Our high-level strategy was to pull news related to a particular stock from various online sources and track the performance of the stock from the time period corresponding to the articles release.  We used the stock performance to classify the articles as indicative of positive or negative performance thereby reducing complexity by converting the tasking into a supervised machine learning problem. For testing we split our data set into training and testing portions to evaluate various classification alorithms. In particular, we employed a series of classification techniques provided by the scikit-learn Python module as well as a custom Naive Bayes implemenation.  The scikit-learn techniques employed were Gaussian Naive Bayes, Linear SVM, Linear SVC, Multinomial Naive Bayes, Bernoulli Naive Bayes, Stochastic Gradient Descent, and the Gradient Boosting classifier.
+
+Our custom implementation of Naive Bayes was motivated by the particular circumstances of the type of data we analyzed.  While we reduced the problem to a supervised learning approach, in reality the problem is much more nuanced than that. An article published on a day with near-average performance cannot necessarily be classified by a marginal positive or negative performance, and indeed can be dismissed as insigicant as it did not correspond to significant market change. Similarly, many features will be present in articles regardless of sentiment or market implications.
+
+To address both of these problems, we employed a statistical method whereby we first only considered articles from days that exhibited stock performance from outside of one standard deviation of the mean performance. We employed the same method in reducing feature noise by only considering features that were strongly linked to positive or negative articles with a weight of, again, at least one standard deviation.
+
+This technique was based on some sweeping assumptions about the data set and the nature of naive bayes.  After tweaking the classifier, we were not able to outperform a random classifier, and decided to focus on further implementation of scikit-learn algorithms.
 
 \subsection{Data}
-\noindent We hoped to generate the most informed opinion of a stock by using crowdsourced content (personal links, weblogs, informal sites) as well as more authoritative news (Business Insider, Bloomberg, Wall Street Journal, etc). Initially, we investigated using RSS feeds for their ubiquity and compatibility with many python libraries. Unfortunately, RSS feeds do not store historical data, so building a training set from many popular feeds was impossible. 
+\noindent In order to successfully leverage social media for data curation and acquisition, we explored a number of strategies. The paucity of freely available historical news, particularly financial news, poised a problem for us immediately.  We experimented with a number of news sources, and found the most success with Twitter.
 
-We then resorted to scraping data from the Google Finance's aggregated web feed. Upon pull information from their feed, we discovered that the articles included only went back 6 months. Additionally, the coverage of news from the 6 month period was more sparse and infrequent than we would have liked. 
+We used Twitter as our primary aggregator for building a database of news articles. In addition to using standard "hashtags" to link tweets together, Twitter also includes a stock tag (ex. \texttt{\$GOOG} ), that allows users to easily tag tweets with a particular ticker symbol.  In turn, we used the stock tag feeds to pull content from all websites linked from tweets. For example, a user might tweet about a blog post or include a business article. Rather than using the user's tweet for content, we use the linked article as our primary source of content. In order to sort through the HTML, we use \href2{http://www.readability.com}{Readability}'s API to extract only relevant content and ignore unimportant features like site navigation and tangential snippets.
 
-We then used Twitter as our primary aggregator for building a database of news articles. In addition to using standard "hashtags" to link tweets together, Twitter also includes a stock tag (ex. \texttt{\$GOOG} ), that allows users to easily tag tweets with a particular ticker symbol.  In turn, we used the stock tag feeds to pull content from all websites linked to from tweets. For example, a user might tweet about a blog post or include a business article. Rather than using the user's tweet for content, we use the linked article as our primary source of content. In order to sort through the HTML, we use \href2{http://www.readability.com}{Readability}'s API to extract only relevant content and ignore unimportant features like site navigation and tangential snippets. While Twitter's API only retrieves up to 5 days of Tweets, the density of coverage was much higher and we were able to scrape and store more articles than Google Finance's feed would have allowed.
+To retrieve financial data about certain stocks, we databased output from a Bloomberg terminal. While Yahoo and Google both provide powerful financial information services, neither one of them has an officially supported API. Indeed, it seems that there are no freely available robust APIs for financial data, so we were left with no alternative but manual input from Bloomberg.
 
-To retrieve financial data about certain stocks, we used a community build Yahoo API connector. While Yahoo and Google both provide powerful financial information services, neither one of them has an officially supported API. Community members have built up libraries to help connect to services. Ultimately, we resorted to using Yahoo's YQL API with a fallback to \texttt{ystockquote.py} if the YQL tables are past capacity. While Yahoo supports historical data, historical data is limited to the opening and closing prices for each day. This made it difficult to precisely track the response immediately after an article was published.
-
-Even though we managed to connect data, we knew that the collection of articles we were retrieving from Twitter was far from ideal. While the articles we found were quality articles, we simply did not have enough time to build up a large enough database. We also could have used a more comprehensive financial data feed. Getting hourly quotes from a historical dataset would have given us more information as to the response of the company's performance. A group with more resources might have spent more money on Thomson Reuters' news feeds and market data feeds.
-
-
-\section{Naive Bayes}
-\noindent Classifying articles of this nature poses an interesting challenge. The articles used in training are not explicitly labeled, but since an article will have a particular sentiment with regard to stock performance, the problem can be treated as supervised. However, extracting the sentiment is a non-trivial problem. Two approaches present themselves. 
-
-The first is to extract sentiment from each individual article. Unfortunately, however, to create a suitable training set this would require human labeling; it is not possible to label individual articles against the actual stock market performance as not all articles will indicate the correct trend. Therefore, we instead used a second approach of aggregating all of the news for a given day, labeling the entire set based on the stock market’s actual performance for that day and finding the most common features across all articles in the set. 
-
-Our training algorithm for naive bayes continued even further into this line of thinking and aggregated all articles from dates with outside of one standard deviate from the mean stock performance for a given date range into two sets, one linked to positive change, one linked to negative. In this way, we removed the noise caused by days that only experience very slight change on the market.
+Unfortunately, data proved to be a substantial limitation to forming any conclusive results.  While we continuously collected data over the time period of the project, our data set remained quite small, and was undoubtedly a limitation to our conclusions.  However, we decided to cut our losses on compiling data in order to focus on classification algorithms.
 
 \section{Support Vector Machines}
-\noindent In an effort to reduce our project's dependency on homemade code and to allow ourselves the flexibility of algorithm experimentation, we decided to incorporate a 3rd party machine learning package into our project. We decided to use Scikit-Learn, an open-source python package developed under the support of Google, to guide us through the process of building a Support Vector Machine. Their framework provides extremely helpful functions for document feature extraction as well as the mathematics and overhead of SVM model training and testing. We plan to test a variety of feature extraction methods implemented with Scikit learn, as well as implement our own. One such method is called bag-of-words, where we use the word frequencies within the corpus to construct sparse vectors representing the documents. Given that SVMs have shown to be one of the most effective approaches to textual analysis, we are confident that we will find some success with this approach if our dataset allows us.
+\noindent In an effort to more appropriately test the feasibility of a social media-derived news market indicator, we sought to employ multiple classification techniques.  The python module scikit-learn proved to be an excellent third party to add to our investigations. In particular, this third-party addition enabled us to experiment with support vector machine classification. Previous researchers in this field have found more success with SVMs than NB, and as such it seemed appropriate for us to test the success of SVM with our social-media derived data.
 
 \section{Results}
 
-\noindent Unfortunately, our data set remains quite small, so it is difficult to draw accurate conclusions on the success of our classifiers, but our initial testing returned 40\% accuracy using a naive bayes classifier and the techniques illustrated above. While this performance is below random, our data set makes any conclusions about its efficacy untenable.
+\noindent Our initial custom naive bayes implementation returned 35\% across multiple trials. By comparison to the Bayes classifiers in scikit-learn, the assumption of a Gaussian distribution is not appropriate for this classification task; both our NB implementation and the scikit-learn Gaussian NB implementation underperformed.
 
-To attempt better results we implemented a SVM approach that we believe will show much better accuracy. Unfortunately, the unreliability of Yahoo's Finance API servers has not allowed us to test this method. When we do test this method, we hope for at least \%60 accurate article prediction.
+Our other techniques proved to be much more effective. In particular, Stochastic Gradient Descent proved to be a very effective classifier, as did Bernoulli Naive Bayes as shown below.  A full table of our results is available in Appendix A.
+
+\begin{tabular}{c | c c c c}
+\textbf{Summary}    & Accuracy  & Precision & Recall    & F1 Score  \\
+\hline
+Random      & 0.462     & 0.776     & 0.462     & 0.545     \\
+Gaussian NB     & 0.328     & 0.742     & 0.328     & 0.398     \\
+Linear SVM      & 0.277     & 0.694     & 0.277     & 0.341     \\
+Multinomial Naive Bayes     & 0.168     & 0.765     & 0.168     & 0.122     \\
+Bernoulli Naive Bayes       & 0.630     & 0.770     & 0.630     & 0.687     \\
+Stochastic Gradient Descent     & 0.832     & 0.783     & 0.832     & 0.804     \\
+Gradient Boosting Classifier        & 0.328     & 0.781     & 0.328     & 0.387     \\
+Random Forest Classifier        & 0.277     & 0.732     & 0.277     & 0.328     \\
+Decision Tree Classifier        & 0.437     & 0.769     & 0.437     & 0.520     \\
+\end{tabular}
+
+With up to 83\% accuracy, we are quite intrigued about the capabilities of our classification technique on a larger data set. While we are employing a freely available library for classification, the integration of social media aggregation may resulted in improvements to our output.
 
 \section{Conclusion}
-\noindent While we explored several promising and cutting edge applications in our project, our research still has a way to go before it is ready to hit the trading floors. Unfortunately, we never were able to fully test our hypothesis as we hit logistical issues with building this system. Regarding our news data, we had problems amassing a collection of news that corresponds to a particular company. While paid historic news APIs exist, our budget unfortunately would not let us run complete tests. Additionally, connecting to an official market data API would help us view a more detailed market response of a stock following the introduction of a piece of news.
 
-Unlike many areas in software development, the world of financial programming doesn't include many free or open source tools to employ. While our model didn't have the most promising result statistics, the poor output most likely stemmed from an incomplete dataset rather than a broken model. From reading several papers and researching others' work, Bayesian classifiers and Scalable Vector Machines have been able to hit accuracy rates of at least 70%. 
+\noindent While we explored several promising and cutting edge applications in our project, our research still has a way to go before it is ready to hit the trading floors. Our largest limitation remains data sources.  While we have seen our classifiers improve as our database has grown, it is still too small to make any conclusive claims about our success rate.
 
-If we had two more months work on this project, we would spend most of our time cultivating and improving the dataset while also discussing the feature extraction component. While the machine learning piece of the equation is easy to implement, managing a large dataset can be cumbersome and designing the best way to choose features for analysis in the articles would most likely require a good bit of strategy and testing.
+Unlike many areas in software development, the world of financial programming doesn't include many free or open source tools to employ. While this is unsurprising, it made research more laborious than in other fields of computer science.
 
-Our results from this project may not have been exemplary, however, we feel that we have made promising steps into a fragmented area with poor API documentation and proprietary services for a team with a nonexistent budget.
+We intend to automate ongoing collection of data for a number of high trading volume stocks and continue running our training algorithms to observe the capability of our algorithms as our data set grows. Given the academic nature of this inquiry, we feel it would be appropriate to release the results of that ongoing classifier on a simple web interface, free of charge.  It may yield some interesting results.
+
+Given the high accuracy we were able to achieve with some of our classification techniques, results with a larger data set would certainly be interesting. 
+
+\section{Appendix A: Detailed Results}
+
+\begin{tabular}{c | c c c c}
+\textbf{Random} & Accuracy  & Precision & Recall    & F1 Score  \\
+\hline
+Negative        & 0.580     & 0.170     & 0.600     & 0.265     \\
+Positive        & 0.580     & 0.909     & 0.577     & 0.706     \\
+Average         & 0.580     & 0.816     & 0.580     & 0.650     \\
+\end{tabular} \\ \\
+
+
+
+\begin{tabular}{c | c c c c}
+\textbf{Gaussian NB}    & Accuracy  & Precision & Recall    & F1 Score  \\
+\hline
+Negative        & 0.328     & 0.108     & 0.600     & 0.184     \\
+Positive        & 0.328     & 0.833     & 0.288     & 0.429     \\
+Average         & 0.328     & 0.742     & 0.328     & 0.398     \\
+\end{tabular} \\ \\
+
+
+
+\begin{tabular}{c | c c c c}
+\textbf{Linear SVM} & Accuracy  & Precision & Recall    & F1 Score  \\
+\hline
+Negative        & 0.277     & 0.092     & 0.533     & 0.157     \\
+Positive        & 0.277     & 0.781     & 0.240     & 0.368     \\
+Average         & 0.277     & 0.694     & 0.277     & 0.341     \\
+\end{tabular} \\ \\
+
+
+
+\begin{tabular}{c | c c c c}
+\textbf{Multinomial Naive Bayes}    & Accuracy  & Precision & Recall    & F1 Score  \\
+\hline
+Negative        & 0.168     & 0.125     & 0.933     & 0.220     \\
+Positive        & 0.168     & 0.857     & 0.058     & 0.108     \\
+Average         & 0.168     & 0.765     & 0.168     & 0.122     \\
+\end{tabular} \\ \\
+
+
+
+\begin{tabular}{c | c c c c}
+\textbf{Bernoulli Naive Bayes}  & Accuracy  & Precision & Recall    & F1 Score  \\
+\hline
+Negative        & 0.630     & 0.108     & 0.267     & 0.154     \\
+Positive        & 0.630     & 0.866     & 0.683     & 0.763     \\
+Average         & 0.630     & 0.770     & 0.630     & 0.687     \\
+\end{tabular} \\ \\
+
+
+
+\begin{tabular}{c | c c c c}
+\textbf{Stochastic Gradient Descent}    & Accuracy  & Precision & Recall    & F1 Score  \\
+\hline
+Negative        & 0.832     & 0.143     & 0.067     & 0.091     \\
+Positive        & 0.832     & 0.875     & 0.942     & 0.907     \\
+Average         & 0.832     & 0.783     & 0.832     & 0.804     \\
+\end{tabular} \\ \\
+
+
+
+\begin{tabular}{c | c c c c}
+\textbf{Gradient Boosting Classifier}   & Accuracy  & Precision & Recall    & F1 Score  \\
+\hline
+Negative        & 0.328     & 0.126     & 0.733     & 0.216     \\
+Positive        & 0.328     & 0.875     & 0.269     & 0.412     \\
+Average         & 0.328     & 0.781     & 0.328     & 0.387     \\
+\end{tabular} \\
+
+
+
+\begin{tabular}{c | c c c c}
+\textbf{Random Forest Classifier}   & Accuracy  & Precision & Recall    & F1 Score  \\
+\hline
+Negative        & 0.277     & 0.101     & 0.600     & 0.173     \\
+Positive        & 0.277     & 0.800     & 0.231     & 0.358     \\
+Average         & 0.277     & 0.712     & 0.277     & 0.335     \\
+\end{tabular} \\ \\
+
+
+
+\begin{tabular}{c | c c c c}
+\textbf{Decision Tree Classifier}   & Accuracy  & Precision & Recall    & F1 Score  \\
+\hline
+Negative        & 0.437     & 0.118     & 0.533     & 0.193     \\
+Positive        & 0.437     & 0.863     & 0.423     & 0.568     \\
+Average         & 0.437     & 0.769     & 0.437     & 0.520     \\
+\end{tabular} \\ \\
+
+\section{References}
+
+\smallskip \noindent Zhang, W. and Skiena, S. 2010. Trading Strategies To Exploit Blog and News Sentiment. In \textit{Proceedings of the Twenty-Fourth National Conference on Artificial Intelligence,} 43-52. Menlo Park, Calif.: AAAI Press. 
 
 \end{document}
