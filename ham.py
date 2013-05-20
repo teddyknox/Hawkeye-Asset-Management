@@ -74,7 +74,6 @@ class HAM(object):
 		output += "\\end{tabular}"
 		print output
 
-		f = open('workfile', 'w')
 
 
 		self.models.append(model)
