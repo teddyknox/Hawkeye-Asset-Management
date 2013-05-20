@@ -6,6 +6,11 @@
 \usepackage{courier}
 \usepackage{hyperref}
 
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
 \frenchspacing
 \setlength{\pdfpagewidth}{8.5in}
 \setlength{\pdfpageheight}{11in}
@@ -63,19 +68,21 @@ Unfortunately, data proved to be a substantial limitation to forming any conclus
 
 Our other techniques proved to be much more effective. In particular, Stochastic Gradient Descent proved to be a very effective classifier, as did Bernoulli Naive Bayes as shown below.  A full table of our results is available in Appendix A.
 
+{\small
 \begin{tabular}{c | c c c c}
 \textbf{Summary}    & Accuracy  & Precision & Recall    & F1 Score  \\
 \hline
 Random      & 0.462     & 0.776     & 0.462     & 0.545     \\
 Gaussian NB     & 0.328     & 0.742     & 0.328     & 0.398     \\
 Linear SVM      & 0.277     & 0.694     & 0.277     & 0.341     \\
-Multinomial Naive Bayes     & 0.168     & 0.765     & 0.168     & 0.122     \\
-Bernoulli Naive Bayes       & 0.630     & 0.770     & 0.630     & 0.687     \\
-Stochastic Gradient Descent     & 0.832     & 0.783     & 0.832     & 0.804     \\
-Gradient Boosting Classifier        & 0.328     & 0.781     & 0.328     & 0.387     \\
-Random Forest Classifier        & 0.277     & 0.732     & 0.277     & 0.328     \\
-Decision Tree Classifier        & 0.437     & 0.769     & 0.437     & 0.520     \\
+Multinomial NB     & 0.168     & 0.765     & 0.168     & 0.122     \\
+Bernoulli NB       & 0.630     & 0.770     & 0.630     & 0.687     \\
+Stochastic Grad.     & 0.832     & 0.783     & 0.832     & 0.804     \\
+Gradient Boost.        & 0.328     & 0.781     & 0.328     & 0.387     \\
+Random Forest        & 0.277     & 0.732     & 0.277     & 0.328     \\
+Decision Tree        & 0.437     & 0.769     & 0.437     & 0.520     \\
 \end{tabular}
+}
 
 With up to 83\% accuracy, we are quite intrigued about the capabilities of our classification technique on a larger data set. While we are employing a freely available library for classification, the integration of social media aggregation may resulted in improvements to our output.
 
@@ -90,8 +97,9 @@ We intend to automate ongoing collection of data for a number of high trading vo
 Given the high accuracy we were able to achieve with some of our classification techniques, results with a larger data set would certainly be interesting. 
 
 \section{Appendix A: Detailed Results}
+{\small
 
-\begin{tabular}{c | c c c c}
+\noindent\begin{tabular}{C{2cm} | c c c c}
 \textbf{Random} & Accuracy  & Precision & Recall    & F1 Score  \\
 \hline
 Negative        & 0.580     & 0.170     & 0.600     & 0.265     \\
@@ -101,7 +109,7 @@ Average         & 0.580     & 0.816     & 0.580     & 0.650     \\
 
 
 
-\begin{tabular}{c | c c c c}
+\noindent\begin{tabular}{C{2cm} | c c c c}
 \textbf{Gaussian NB}    & Accuracy  & Precision & Recall    & F1 Score  \\
 \hline
 Negative        & 0.328     & 0.108     & 0.600     & 0.184     \\
@@ -111,7 +119,7 @@ Average         & 0.328     & 0.742     & 0.328     & 0.398     \\
 
 
 
-\begin{tabular}{c | c c c c}
+\noindent\begin{tabular}{C{2cm} | c c c c}
 \textbf{Linear SVM} & Accuracy  & Precision & Recall    & F1 Score  \\
 \hline
 Negative        & 0.277     & 0.092     & 0.533     & 0.157     \\
@@ -121,8 +129,8 @@ Average         & 0.277     & 0.694     & 0.277     & 0.341     \\
 
 
 
-\begin{tabular}{c | c c c c}
-\textbf{Multinomial Naive Bayes}    & Accuracy  & Precision & Recall    & F1 Score  \\
+\noindent\begin{tabular}{C{2cm} | c c c c}
+\textbf{Multinomial NB}    & Accuracy  & Precision & Recall    & F1 Score  \\
 \hline
 Negative        & 0.168     & 0.125     & 0.933     & 0.220     \\
 Positive        & 0.168     & 0.857     & 0.058     & 0.108     \\
@@ -131,8 +139,8 @@ Average         & 0.168     & 0.765     & 0.168     & 0.122     \\
 
 
 
-\begin{tabular}{c | c c c c}
-\textbf{Bernoulli Naive Bayes}  & Accuracy  & Precision & Recall    & F1 Score  \\
+\noindent\begin{tabular}{C{2cm} | c c c c}
+\textbf{Bernoulli NB}  & Accuracy  & Precision & Recall    & F1 Score  \\
 \hline
 Negative        & 0.630     & 0.108     & 0.267     & 0.154     \\
 Positive        & 0.630     & 0.866     & 0.683     & 0.763     \\
@@ -141,8 +149,8 @@ Average         & 0.630     & 0.770     & 0.630     & 0.687     \\
 
 
 
-\begin{tabular}{c | c c c c}
-\textbf{Stochastic Gradient Descent}    & Accuracy  & Precision & Recall    & F1 Score  \\
+\noindent\begin{tabular}{C{2cm} | c c c c}
+\textbf{Stochastic Grad.}    & Accuracy  & Precision & Recall    & F1 Score  \\
 \hline
 Negative        & 0.832     & 0.143     & 0.067     & 0.091     \\
 Positive        & 0.832     & 0.875     & 0.942     & 0.907     \\
@@ -151,8 +159,8 @@ Average         & 0.832     & 0.783     & 0.832     & 0.804     \\
 
 
 
-\begin{tabular}{c | c c c c}
-\textbf{Gradient Boosting Classifier}   & Accuracy  & Precision & Recall    & F1 Score  \\
+\noindent\begin{tabular}{C{2cm} | c c c c}
+\textbf{Gradient Boost.}   & Accuracy  & Precision & Recall    & F1 Score  \\
 \hline
 Negative        & 0.328     & 0.126     & 0.733     & 0.216     \\
 Positive        & 0.328     & 0.875     & 0.269     & 0.412     \\
@@ -161,8 +169,8 @@ Average         & 0.328     & 0.781     & 0.328     & 0.387     \\
 
 
 
-\begin{tabular}{c | c c c c}
-\textbf{Random Forest Classifier}   & Accuracy  & Precision & Recall    & F1 Score  \\
+\noindent\begin{tabular}{C{2cm} | c c c c}
+\textbf{Random Forest}   & Accuracy  & Precision & Recall    & F1 Score  \\
 \hline
 Negative        & 0.277     & 0.101     & 0.600     & 0.173     \\
 Positive        & 0.277     & 0.800     & 0.231     & 0.358     \\
@@ -171,14 +179,14 @@ Average         & 0.277     & 0.712     & 0.277     & 0.335     \\
 
 
 
-\begin{tabular}{c | c c c c}
-\textbf{Decision Tree Classifier}   & Accuracy  & Precision & Recall    & F1 Score  \\
+\noindent\begin{tabular}{C{2cm} | c c c c}
+\textbf{Decision Tree}   & Accuracy  & Precision & Recall    & F1 Score  \\
 \hline
 Negative        & 0.437     & 0.118     & 0.533     & 0.193     \\
 Positive        & 0.437     & 0.863     & 0.423     & 0.568     \\
 Average         & 0.437     & 0.769     & 0.437     & 0.520     \\
 \end{tabular} \\ \\
-
+}
 \section{References}
 
 \smallskip \noindent Zhang, W. and Skiena, S. 2010. Trading Strategies To Exploit Blog and News Sentiment. In \textit{Proceedings of the Twenty-Fourth National Conference on Artificial Intelligence,} 43-52. Menlo Park, Calif.: AAAI Press. 
