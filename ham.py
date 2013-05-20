@@ -92,12 +92,21 @@ class HAM(object):
         self.neg_f1.append(neg_f1)
         self.avg_f1.append(avg_f1)
 
-
     def plot_charts(self):
         plot_chart(self.avg_acc, self.models, name="accuracy", title="Accuracy", yaxis="Accuracy (%)")
         plot_chart_3(self.pos_prec, self.neg_prec, self.avg_prec, self.models, name="precision", title="Precision", yaxis="Precision (%)")
         plot_chart_3(self.pos_rec, self.neg_rec, self.avg_rec, self.models, name="recall", title="Recall", yaxis="Recall (%)")
         plot_chart_3(self.pos_f1, self.neg_f1, self.avg_f1, self.models, name="f1", title="F1 Score", yaxis="F1 Score (%)")
+
+    def summary_chart(self):
+        print "\n\n"
+        output = '\\begin{tabular}{c | c c c c}\n'
+        output += "\\textbf{%s}\t& Accuracy\t& Precision\t& Recall\t& F1 Score\t\\\\\n" % ("Summary")
+        output += "\\hline \n"
+        for i in range(len(self.models)):
+            output += "%s\t\t& %.3f\t\t& %.3f\t\t& %.3f\t\t& %.3f\t\t\\\\\n" % (self.models[i], self.avg_acc[i], self.avg_prec[i], self.avg_rec[i], self.avg_f1[i])
+        output += "\\end{tabular}"
+        print output
 
     def print_doc_feats(self):
         for feature in self.vectorizer.get_feature_names():

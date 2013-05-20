@@ -47,4 +47,5 @@ ham.model = DecisionTreeClassifier()
 ham.train_test('Decision Tree Classifier', charts)
 
 if charts:
-	ham.plot_charts()
+    ham.summary_chart()
+    ham.plot_charts()
