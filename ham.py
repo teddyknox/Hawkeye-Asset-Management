@@ -2,13 +2,22 @@
 
 from util import *
 from news import News
+
+from sklearn import svm
 from sklearn import naive_bayes
-from sklearn.metrics import precision_score, recall_score, accuracy_score, classification_report
+from sklearn.linear_model import SGDClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+
+from sklearn.metrics import *
+import matplotlib.pyplot as plt
 import math
 from random import choice
 import numpy as np
-# from nltk.corpus import stopwords
-# from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from nltk.stem.wordnet import WordNetLemmatizer
+# from output import *
+
 
 class HAM(object):
 
@@ -17,12 +26,77 @@ class HAM(object):
 		self.vectorizer = vectorizer
 		self.news_market_data = False
 		self.movie_review_data = False
-
-	def train_test(self):
+		self.models = []
+		self.pos_acc = []
+		self.neg_acc = []
+		self.avg_acc = []
+		self.pos_prec = []
+		self.neg_prec = []
+		self.avg_prec = []
+		self.pos_rec = []
+		self.neg_rec = []
+		self.avg_rec = []
+		self.pos_f1 = []
+		self.neg_f1 = []
+		self.avg_f1 = []
+	
+	def train_test(self, name="A Model", charts=False):
 		self.model.fit(self.train_vecs, self.train_labs)
 		preds = self.model.predict(self.test_vecs)
 		self.test_labs
-		print classification_report(self.test_labs, preds, [-1,1], ['Negative','Positive'])
+		if charts == True:
+			self.graph_data(self.test_labs, preds, name)
+		else:
+			print classification_report(self.test_labs, preds, [-1,1], ['Negative','Positive'])
+
+	def graph_data(self, labs, preds, model="A Model"):
+
+		pos_acc = accuracy_score(labs, preds)
+		neg_acc = accuracy_score(labs, preds)
+		avg_acc = accuracy_score(labs, preds)
+		pos_prec = precision_score(labs, preds, labels=[-1, 1], pos_label=1)
+		neg_prec = precision_score(labs, preds, labels=[-1, 1], pos_label=-1)
+		avg_prec = precision_score(labs, preds, labels=[-1, 1], pos_label=None, average="weighted")
+		pos_rec = recall_score(labs, preds, labels=[-1, 1], pos_label=1)
+		neg_rec = recall_score(labs, preds, labels=[-1, 1], pos_label=-1)
+		avg_rec = recall_score(labs, preds, labels=[-1, 1], pos_label=None, average="weighted")
+		pos_f1 = f1_score(labs, preds, labels=[-1, 1], pos_label=1)
+		neg_f1 = f1_score(labs, preds, labels=[-1, 1], pos_label=-1)
+		avg_f1 = f1_score(labs, preds, labels=[-1, 1], pos_label=None, average="weighted")
+
+		print "\n\n"
+		output = '\\begin{tabular}{c | c c c c}\n'
+		output += "\\textbf{%s}\t& Accuracy\t& Precision\t& Recall\t& F1 Score\t\\\\\n" % (model)
+		output += "\\hline \n"
+		output += "Negative\t\t& %.3f\t\t& %.3f\t\t& %.3f\t\t& %.3f\t\t\\\\\n" % (neg_acc, neg_prec, neg_rec, neg_f1)
+		output += "Positive\t\t& %.3f\t\t& %.3f\t\t& %.3f\t\t& %.3f\t\t\\\\\n" % (pos_acc, pos_prec, pos_rec, pos_f1)
+		output += "Average \t\t& %.3f\t\t& %.3f\t\t& %.3f\t\t& %.3f\t\t\\\\\n" % (pos_acc, avg_prec, avg_rec, avg_f1)
+		output += "\\end{tabular}"
+		print output
+
+		f = open('workfile', 'w')
+
+
+		self.models.append(model)
+		self.pos_acc.append(pos_acc)
+		self.neg_acc.append(neg_acc)
+		self.avg_acc.append(avg_acc)
+		self.pos_prec.append(pos_prec)
+		self.neg_prec.append(neg_prec)
+		self.avg_prec.append(avg_prec)
+		self.pos_rec.append(pos_rec)
+		self.neg_rec.append(neg_rec)
+		self.avg_rec.append(avg_rec)
+		self.pos_f1.append(pos_f1)
+		self.neg_f1.append(neg_f1)
+		self.avg_f1.append(avg_f1)
+
+
+	def plot_charts(self):
+		plot_chart(self.avg_acc, self.models, name="accuracy", title="Accuracy", yaxis="Accuracy (%)")
+		plot_chart_3(self.pos_prec, self.neg_prec, self.avg_prec, self.models, name="precision", title="Precision", yaxis="Precision (%)")
+		plot_chart_3(self.pos_rec, self.neg_rec, self.avg_rec, self.models, name="recall", title="Recall", yaxis="Recall (%)")
+		plot_chart_3(self.pos_f1, self.neg_f1, self.avg_f1, self.models, name="f1", title="F1 Score", yaxis="F1 Score (%)")
 
 	def print_doc_feats(self):
 		for feature in self.vectorizer.get_feature_names():
@@ -86,7 +160,7 @@ class HAM(object):
 
 	def news_labels(self, corpus):
 		''' Returns a numpy array of integer labels that correspond to the corpus docs.
-		 	1 for a doc about a stock that happened to go up, -1 for a doc about a stock that went down. Removes data entry if no stock data.
+			1 for a doc about a stock that happened to go up, -1 for a doc about a stock that went down. Removes data entry if no stock data.
 		 '''
 		labels = []
 		for doc in corpus:
@@ -133,3 +207,47 @@ class RandomClassifier(object):
 # 			word = self.wnl.lemmatize(word)
 # 			return word
 # 		return ' '.join(map(process_word, doc.split()))
+
+def plot_chart(results, labels, name="figure", title=None, yaxis=None):
+
+	N = len(results)
+
+	ind = np.arange(N)
+	width = 0.35
+
+	fig = plt.figure(facecolor="#ffffff")
+	ax = fig.add_subplot(111)
+	rects1 = ax.bar(ind + (width / 4), results, width, color='#6AA8EB')
+
+	# add some
+	ax.set_ylabel(yaxis, family="serif")
+	ax.set_title(title, family="serif")
+	ax.set_xticks(ind + (width * 3 / 4))
+	ax.set_xticklabels(labels, family="serif", fontname="Computer Modern")
+
+	plt.savefig(name + '.png')
+
+	# plt.show()
+
+def plot_chart_3(results, results2, results3, labels, name="figure", title=None, yaxis=None):
+
+	N = len(results)
+
+	ind = np.arange(N)
+	width = 0.30
+
+	fig = plt.figure(facecolor="#ffffff")
+	ax = fig.add_subplot(111)
+	pos = ax.bar(ind, results, width, color='#6AA8EB')
+	neg = ax.bar(ind + width, results2, width, color='r')
+	avg = ax.bar(ind + 2 * width, results3, width, color='g')
+
+	# add some
+	ax.set_ylabel(yaxis, family="serif")
+	ax.set_title(title, family="serif")
+	ax.set_xticks(ind + 3 * width / 2)
+	ax.set_xticklabels(labels, family="serif", fontname="Computer Modern")
+
+	ax.legend((pos, neg, avg), ('Positive', 'Negative', 'Average'))
+
+	plt.savefig(name + '.png')
