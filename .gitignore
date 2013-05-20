@@ -34,6 +34,12 @@ nosetests.xml
 .project
 .pydevproject
 
+#Ignore Images
+accuracy.png
+f1.png
+recall.png
+precision.png
+
 Resources
 *sublime*
 
