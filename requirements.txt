@@ -13,3 +13,4 @@ ystockquote
 urllib
 cython
 scipy
+cpickle

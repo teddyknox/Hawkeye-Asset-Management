@@ -1,0 +1,33 @@
+Hawkeye Asset Managment (HAM)
+Teddy Knox, Will Potter, Parker Woodsworth
+Kauchak CS-311 2013
+
+How does anyone predict the movement of stocks?
+	- financial news (AP, Reuters, Wall Street Journal, New York Times)
+	- financial metrics (Quarterly Investor reports, Treasury reports, Time series analysis)
+
+How did we?
+	- financial news
+
+What news did we use?
+	- First we scraped Google Finance (screenshot?)
+		- but that only goes back 14 days
+	- Then we started scraping Reuters
+		- but that doesn't go back far enough either
+	- Finally we got excited about searching Twitter for news story links...
+		- but found that their search index was limited to 7 days.
+		- So naturally we used the twitter data.
+
+How did we scrape?
+	- Searched Twitter for '$AAPL' or whatever
+	- extract links from tweets
+	- use the Readability API to get article body and content from those links.
+
+Stock data
+	- Yahoo Finance API
+	- Bloomberg machine in the library 
+	- both not so fun
+
+Problem Conception
+	- Supervised learning problem
+	- 
