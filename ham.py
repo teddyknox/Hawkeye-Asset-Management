@@ -2,8 +2,6 @@
 
 from util import *
 from news import News
-
-from sklearn import svm
 from sklearn import naive_bayes
 from sklearn.linear_model import SGDClassifier
 from sklearn.ensemble import GradientBoostingClassifier
